@@ -1,6 +1,3 @@
-/*
- * Clase que contiene los atributos y métodos de un alquiler
- */
 package com.guanarenta.clases;
 
 import java.time.Instant;
