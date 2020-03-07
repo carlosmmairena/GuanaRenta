@@ -158,10 +158,10 @@ BEGIN
            UPDATE TblPropietario SET
            -- cedPropiet = $cedPropiet,
            nomPropiet = $nomPropiet,
-           genero = $genero,
-		   direccion = $direccion,
-           telefono = $telefono,
-           email = $email
+           genero     = $genero,
+		   direccion  = $direccion,
+           telefono   = $telefono,
+           email      = $email
            WHERE cedPropiet = $cedPropiet;
            
       END IF;
@@ -502,6 +502,175 @@ BEGIN
     END IF;
     
 END $$
+DELIMITER ;
+
+-- Procedimiento que muestra todos los datos de las tablas
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE stpMostrarDatos(
+$Tabla VARCHAR(20))
+BEGIN
+	
+    CASE $Tabla
+				WHEN 'Propietarios' THEN SELECT * FROM TblPropietario;
+                WHEN 'Viviendas' THEN SELECT * FROM TblVivienda;
+                WHEN 'Inquilinos' THEN SELECT * FROM TblInquilino;
+                WHEN 'Alquileres' THEN SELECT * FROM TblAlquileres;
+                WHEN 'Mensualidades' THEN SELECT * FROM TblMensualidades;
+    END CASE;
+    
+END$$
+DELIMITER ;
+
+-- Almacenamiento que nos muestra si un usuario existe
+DELIMITER $$
+CREATE DEFINER = `root`@`localhost` PROCEDURE stpExisteUsuario
+($id INT,
+$tipoUsuario VARCHAR(20))
+
+BEGIN
+	
+    CASE $tipoUsuario
+		WHEN 'Propietario' THEN SELECT COUNT(cedPropiet) FROM TblPropietario WHERE cedPropiet = $id;
+        WHEN 'Inquilino'   THEN SELECT COUNT(cedInqui) FROM TblInquilino WHERE cedInqui =$id;
+	END CASE;
+END$$
+DELIMITER ;
+
+
+-- Este procedimiento recibe la tabla a buscar el dato y el campo donde está el dato
+-- luego llama a los procedimientos correspondientes
+DELIMITER $$
+CREATE DEFINER = 'root'@'localhost' PROCEDURE stpBuscarPrincipal
+($campo TEXT,
+$dato TEXT,
+$tabla TEXT)
+BEGIN
+	
+    CASE $tabla
+				WHEN 'TblPropietario'   THEN CALL `BD_GuanaRenta`.`stpBuscarPropietario`($campo,$dato);
+				WHEN 'TblInquilino'     THEN CALL `BD_GuanaRenta`.`stpBuscarInquilino`($campo,$dato);
+                WHEN 'TblVivienda'      THEN CALL `BD_GuanaRenta`.`stpBuscarVivienda`($campo,$dato);
+                WHEN 'TblMensualidades' THEN CALL `BD_GuanaRenta`.`stpBuscarMensualidad`($campo,$dato);
+                WHEN 'TblAlquileres' THEN CALL `BD_GuanaRenta`.`stpBuscarAlquiler`($campo,$dato);
+			ELSE
+				SELECT 'NO HAY COINCIDENCIAS';
+	END CASE;
+END$$
+DELIMITER ;
+
+-- Almacenamiento que permite mostrarnos los ALQUILERES
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE stpBuscarAlquiler
+($campo TEXT,
+$dato TEXT)
+
+BEGIN
+      CASE $campo 
+                WHEN 'numAlquiler'     THEN SELECT * FROM TblAlquileres WHERE numAlquiler LIKE CONCAT('%',$dato,'%');
+                WHEN 'fechContrato'    THEN SELECT * FROM TblAlquileres WHERE fechContrato LIKE CONCAT('%',$dato,'%');
+                WHEN 'cantMeses'       THEN SELECT * FROM TblAlquileres WHERE cantMeses LIKE CONCAT('%',$dato,'%');
+                WHEN 'numAdultos'      THEN SELECT * FROM TblAlquileres WHERE numAdultos LIKE CONCAT('%',$dato,'%');
+                WHEN 'numNinos'        THEN SELECT * FROM TblAlquileres WHERE numNinos LIKE CONCAT('%',$dato,'%');
+                WHEN 'deposGarantia'   THEN SELECT * FROM TblAlquileres WHERE deposGarantia LIKE CONCAT('%',$dato,'%');
+                WHEN 'precioAlquiler'  THEN SELECT * FROM TblAlquileres WHERE precioAlquiler LIKE CONCAT('%',$dato,'%');
+                WHEN 'porcIncremAnual' THEN SELECT * FROM TblAlquileres WHERE porcIncremAnual LIKE CONCAT('%',$dato,'%');
+                WHEN 'cedInqui'        THEN SELECT * FROM TblAlquileres WHERE cedInqui LIKE CONCAT('%',$dato,'%');
+                WHEN 'idVivienda'      THEN SELECT * FROM TblAlquileres WHERE idVivienda LIKE CONCAT('%',$dato,'%');
+                WHEN 'estado'          THEN SELECT * FROM TblAlquileres WHERE estado LIKE CONCAT('%',$dato,'%');
+			ELSE 
+				Select * FROM TblAlquileres;
+		END CASE;
+END$$
+DELIMITER ;
+
+-- Almacenamiento que permite mostrarnos las MENSUALIDADES
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE stpBuscarMensualidad
+($campo TEXT,
+$dato TEXT)
+
+BEGIN
+      CASE $campo 
+                WHEN 'consecutivo'  THEN SELECT * FROM TblMensualidades WHERE consecutivo LIKE CONCAT('%',$dato,'%');
+                WHEN 'numAlquiler'  THEN SELECT * FROM TblMensualidades WHERE numAlquiler LIKE CONCAT('%',$dato,'%');
+                WHEN 'fechCreacion' THEN SELECT * FROM TblMensualidades WHERE fechCreacion LIKE CONCAT('%',$dato,'%');
+                WHEN 'nomInqui'     THEN SELECT * FROM TblMensualidades WHERE nomInqui LIKE CONCAT('%',$dato,'%');
+                WHEN 'mesCobro'     THEN SELECT * FROM TblMensualidades WHERE mesCobro LIKE CONCAT('%',$dato,'%');
+                WHEN 'anioActual'   THEN SELECT * FROM TblMensualidades WHERE anioActual LIKE CONCAT('%',$dato,'%');
+                WHEN 'descuento'    THEN SELECT * FROM TblMensualidades WHERE descuento LIKE CONCAT('%',$dato,'%');
+                WHEN 'montoMes'     THEN SELECT * FROM TblMensualidades WHERE montoMes LIKE CONCAT('%',$dato,'%');
+                WHEN 'estado'       THEN SELECT * FROM TblMensualidades WHERE estado LIKE CONCAT('%',$dato,'%');                
+			ELSE 
+				Select * FROM TblMensualidades;
+		END CASE;
+END$$
+DELIMITER ;
+
+-- Almacenamiento que permite mostrarnos las VIVIENDAS
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE stpBuscarVivienda
+($campo TEXT,
+$dato TEXT)
+
+BEGIN
+      CASE $campo 
+                WHEN 'idVivienda'    THEN SELECT * FROM TblVivienda WHERE idVivienda LIKE CONCAT('%',$dato,'%');
+                WHEN 'descripcion'   THEN SELECT * FROM TblVivienda WHERE descripcion LIKE CONCAT('%',$dato,'%');
+                WHEN 'mtsConstrucc'  THEN SELECT * FROM TblVivienda WHERE mtsConstrucc LIKE CONCAT('%',$dato,'%');
+                WHEN 'mtsLote'       THEN SELECT * FROM TblVivienda WHERE mtsLote LIKE CONCAT('%',$dato,'%');
+                WHEN 'tipoConstrucc' THEN SELECT * FROM TblVivienda WHERE tipoConstrucc LIKE CONCAT('%',$dato,'%');
+                WHEN 'cochera' 		 THEN SELECT * FROM TblVivienda WHERE cochera LIKE CONCAT('%',$dato,'%');
+                WHEN 'cantHabitac'   THEN SELECT * FROM TblVivienda WHERE cantHabitac LIKE CONCAT('%',$dato,'%');
+                WHEN 'cantBanios'    THEN SELECT * FROM TblVivienda WHERE cantBanios LIKE CONCAT('%',$dato,'%');
+                WHEN 'carretera'     THEN SELECT * FROM TblVivienda WHERE carretera LIKE CONCAT('%',$dato,'%');
+                WHEN 'precioBase'    THEN SELECT * FROM TblVivienda WHERE precioBase LIKE CONCAT('%',$dato,'%');
+                WHEN 'deposGarantia' THEN SELECT * FROM TblVivienda WHERE deposGarantia LIKE CONCAT('%',$dato,'%');
+                WHEN 'cedPropiet'    THEN SELECT * FROM TblVivienda WHERE cedPropiet LIKE CONCAT('%',$dato,'%');
+                WHEN 'estado'        THEN SELECT * FROM TblVivienda WHERE estado LIKE CONCAT('%',$dato,'%');
+			ELSE 
+				Select * FROM TblVivienda;
+		END CASE;
+END$$
+DELIMITER ;
+
+-- Almacenamiento que permite mostrarnos los INQUILINOS
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE stpBuscarInquilino
+($campo TEXT,
+$dato TEXT)
+
+BEGIN
+      CASE $campo 
+                 WHEN 'cedInqui'  THEN SELECT * FROM TblInquilino WHERE cedInqui LIKE CONCAT('%',$dato,'%');
+                 WHEN 'nomInqui'  THEN SELECT * FROM TblInquilino WHERE nomInqui LIKE CONCAT('%',$dato,'%');
+                 WHEN 'genero'    THEN SELECT * FROM TblInquilino WHERE genero LIKE CONCAT('%',$dato,'%');
+                 WHEN 'fechNac'   THEN SELECT * FROM TblInquilino WHERE fechNac LIKE CONCAT('%',$dato,'%');
+                 WHEN 'direccion' THEN SELECT * FROM TblInquilino WHERE direccion LIKE CONCAT('%',$dato,'%');
+                 WHEN 'email'     THEN SELECT * FROM TblInquilino WHERE email LIKE CONCAT('%',$dato,'%');
+                 WHEN 'ocupacion' THEN SELECT * FROM TblInquilino WHERE ocupacion LIKE CONCAT('%',$dato,'%');
+			ELSE 
+                 Select * FROM TblInquilino;
+     END CASE;
+END$$
+DELIMITER ;
+
+-- Almacenamiento que permite mostrarnos los PROPIETARIOS
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE stpBuscarPropietario
+($campo TEXT,
+$dato TEXT)
+
+BEGIN
+      CASE $campo 
+                 WHEN 'cedPropiet' THEN SELECT * FROM TblPropietario WHERE cedPropiet LIKE CONCAT('%',$dato,'%');
+                 WHEN 'nomPropiet' THEN SELECT * FROM TblPropietario WHERE nomPropiet LIKE CONCAT('%',$dato,'%');
+                 WHEN 'genero'     THEN SELECT * FROM TblPropietario WHERE genero LIKE CONCAT('%',$dato,'%');
+                 WHEN 'telefono'   THEN SELECT * FROM TblPropietario WHERE telefono LIKE CONCAT('%',$dato,'%');
+                 WHEN 'email'      THEN SELECT * FROM TblPropietario WHERE email LIKE CONCAT('%',$dato,'%');
+            ELSE
+				Select * FROM TblPropietario;
+	END CASE;
+END$$
 DELIMITER ;
 
 -- Por aquello xd

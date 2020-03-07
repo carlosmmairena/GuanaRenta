@@ -14,7 +14,7 @@ import java.awt.Toolkit;
 
 /**
  *
- * @author Ander Narvaez
+ * @author Sharlene Guadamuz
  * @author Carlos Mairena
  */
 public class FrmGuanaRenta extends javax.swing.JFrame {

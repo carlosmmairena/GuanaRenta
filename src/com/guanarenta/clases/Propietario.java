@@ -3,32 +3,35 @@
  */
 package com.guanarenta.clases;
 
-
 /**
  * @author Ander Narvaez
  * @author Carlos Mairena
  */
 public class Propietario {
+
     private long cedula;
     private String nombre;
     private char genero;
-    private String telefono;
+    private int telefono;
     private String correo;
+    private String direccion;
 
-    public Propietario(long cedula, String nombre, char genero, String telefono, String correro) {
+    public Propietario(long cedula, String nombre, char genero, int telefono, String correro, String direccion) {
         this.cedula = cedula;
         this.nombre = nombre;
         this.genero = genero;
         this.telefono = telefono;
         this.correo = correro;
+        this.direccion = direccion;
     }
-    
-        public Propietario(){
+
+    public Propietario() {
         this.cedula = 0;
         this.nombre = "";
         this.genero = 'F';
-        this.telefono ="";
+        this.telefono = 0;
         this.correo = "";
+        this.direccion = "";
     }
 
     public long getCedula() {
@@ -55,20 +58,27 @@ public class Propietario {
         this.genero = genero;
     }
 
-    public String getTelefono() {
+    public int getTelefono() {
         return telefono;
     }
 
-    public void setTelefono(String telefono) {
+    public void setTelefono(int telefono) {
         this.telefono = telefono;
     }
 
-    public String getCorrero() {
+    public String getCorreo() {
         return correo;
     }
 
-    public void setCorrero(String correo) {
+    public void setCorreo(String correo) {
         this.correo = correo;
     }
-    
+
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
+    }
 }

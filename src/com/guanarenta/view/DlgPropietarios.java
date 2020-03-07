@@ -1,27 +1,35 @@
 
 /*
  * Clase que contiene la funcionalidad de obtener, modificar, eliminar y editar los propietarios
+ * LO QUE FALTA ES MEJORAR LA BÚSQUEDA A NIVEL DE FRONT END, PARA QUE BUSQUE POR DIFERENTES PROPIEDADES
  */
 package com.guanarenta.view;
 
 import com.guanarenta.clases.Propietario;
+import com.guanarenta.connections.Enlace;
+import com.guanarenta.connections.OperacionesPropietario;
 import com.guanarenta.storage.StoragePropietarios;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
  *
- * @author Ander Narvaez
+ * @author Sharlene Guadamuz
  * @author Carlos Mairena
  */
 public class DlgPropietarios extends javax.swing.JDialog {
+
+    OperacionesPropietario operacion;
 
     StoragePropietarios storagePropietario;
     Propietario propietario;
 
     String ENCABEZADO_TABLA[];
-    DefaultTableModel propietariosTabla;
+    DefaultTableModel modeloTabla;
     private int inPro;
 
     /**
@@ -33,6 +41,10 @@ public class DlgPropietarios extends javax.swing.JDialog {
     public DlgPropietarios(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        this.propietario = new Propietario();
+        this.operacion = new OperacionesPropietario();
+        this.modeloTabla = new DefaultTableModel();
+
     }
 
     /**
@@ -47,6 +59,8 @@ public class DlgPropietarios extends javax.swing.JDialog {
         initComponents();
         this.propietario = new Propietario();
         this.storagePropietario = storagePropietario;
+        this.operacion = new OperacionesPropietario();
+        this.modeloTabla = new DefaultTableModel();
     }
 
     /**
@@ -60,11 +74,14 @@ public class DlgPropietarios extends javax.swing.JDialog {
     public DlgPropietarios(java.awt.Frame parent, boolean modal, StoragePropietarios storagePropietario, int inPro) {
         super(parent, modal);
         initComponents();
+
         this.propietario = new Propietario();
         this.storagePropietario = storagePropietario;
         this.inPro = inPro;
         tbdPropietarios.setTitleAt(0, "Seleccionar");
         tblPropietarios.setToolTipText("Haga doble click en un propietaro para seleccionarlo");
+        this.operacion = new OperacionesPropietario();
+        this.modeloTabla = new DefaultTableModel();
     }
 
     @SuppressWarnings("unchecked")
@@ -98,7 +115,9 @@ public class DlgPropietarios extends javax.swing.JDialog {
         lblTelefono = new javax.swing.JLabel();
         btnCancelar = new javax.swing.JButton();
         btnLimpiarCampos = new javax.swing.JButton();
-        txtTelefono = new javax.swing.JFormattedTextField();
+        txtTelefono = new javax.swing.JTextField();
+        txtDireccion = new javax.swing.JTextField();
+        lblDireccion = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("GuanaRenta - Propietarios");
@@ -309,16 +328,8 @@ public class DlgPropietarios extends javax.swing.JDialog {
             }
         });
 
-        try {
-            txtTelefono.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("+506-####-####")));
-        } catch (java.text.ParseException ex) {
-            ex.printStackTrace();
-        }
-        txtTelefono.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                txtTelefonoKeyTyped(evt);
-            }
-        });
+        lblDireccion.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        lblDireccion.setText("Dirección");
 
         javax.swing.GroupLayout pnlBasePropietarioLayout = new javax.swing.GroupLayout(pnlBasePropietario);
         pnlBasePropietario.setLayout(pnlBasePropietarioLayout);
@@ -328,30 +339,33 @@ public class DlgPropietarios extends javax.swing.JDialog {
                 .addContainerGap(226, Short.MAX_VALUE)
                 .addGroup(pnlBasePropietarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlBasePropietarioLayout.createSequentialGroup()
-                        .addGroup(pnlBasePropietarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(lblGenero, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(lblEmail, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(lblTelefono, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(lblNombre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(lblCedula, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(27, 27, 27))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlBasePropietarioLayout.createSequentialGroup()
                         .addComponent(btnGuardar, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(43, 43, 43)))
+                        .addGap(43, 43, 43))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlBasePropietarioLayout.createSequentialGroup()
+                        .addGroup(pnlBasePropietarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(lblDireccion, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(pnlBasePropietarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(lblGenero, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(lblEmail, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(lblTelefono, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(lblNombre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(lblCedula, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(27, 27, 27)))
                 .addGroup(pnlBasePropietarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnlBasePropietarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(txtCedula)
+                        .addComponent(txtCedula, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
                         .addComponent(txtEmail)
                         .addComponent(txtNombre)
                         .addGroup(pnlBasePropietarioLayout.createSequentialGroup()
                             .addComponent(rdbF)
                             .addGap(18, 18, 18)
                             .addComponent(rdbM))
-                        .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(txtTelefono, javax.swing.GroupLayout.Alignment.TRAILING))
                     .addGroup(pnlBasePropietarioLayout.createSequentialGroup()
                         .addComponent(btnCancelar, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(52, 52, 52)
-                        .addComponent(btnLimpiarCampos, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnLimpiarCampos, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtDireccion, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(157, 157, 157))
         );
         pnlBasePropietarioLayout.setVerticalGroup(
@@ -377,12 +391,16 @@ public class DlgPropietarios extends javax.swing.JDialog {
                 .addGap(14, 14, 14)
                 .addGroup(pnlBasePropietarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtTelefono))
                 .addGap(10, 10, 10)
                 .addGroup(pnlBasePropietarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(lblEmail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txtEmail))
-                .addGap(59, 59, 59)
+                .addGap(8, 8, 8)
+                .addGroup(pnlBasePropietarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtDireccion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblDireccion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
                 .addGroup(pnlBasePropietarioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCancelar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnGuardar, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -416,68 +434,13 @@ public class DlgPropietarios extends javax.swing.JDialog {
         if (!Character.isDigit(tecla) && tecla != KeyEvent.VK_BACK_SPACE) {
             evt.consume();
         }
-
     }//GEN-LAST:event_txtCedulaKeyTyped
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
-        // Magia del botón cuando se empieza agregar el botón
-
-        if (this.verificarDatos()) { // Verificamos de que no hayan espacios en blanco
-
-            try {
-
-                this.propietario = new Propietario(); // Inicializamos el objeto propietario
-                this.propietario.setNombre(this.txtNombre.getText());
-                this.propietario.setGenero(this.obtenerGenero());
-                this.propietario.setCorrero(this.txtEmail.getText());
-                this.propietario.setTelefono(this.txtTelefono.getText());
-
-                if (tbdPropietarios.getTitleAt(1).equalsIgnoreCase("Añadir")) { // Si el título dice añadir, entonces guardamos al propietario
-
-                    // Antes de todo, comprobamos de que la cédula que ingresaron sea diferente con las que ya están registradas
-                    if (storagePropietario.comprobarCédula(Long.parseLong(this.txtCedula.getText()))) {  /**/
-
-                        this.propietario.setCedula(Long.parseLong(this.txtCedula.getText()));
-                        
-                        this.storagePropietario.guardaPropietario(propietario); /**/
-                        this.rellenarTabla(); // Rellenamos/Actualizamos la tabla
-                        this.limpiarCampos(); // Limpiamos los campos
-                        this.cambiarPestañaT(); // Cambiamos la pestaña
-
-                    } else { // En caso de que la cédula ya haya sido registrada
-
-                        JOptionPane.showMessageDialog(this, "Esta cédula ya fue registrada");
-                        txtCedula.setText("");
-
-                    }
-
-                } else { // Si el título no dice Añadir, entonces es editar
-
-                    this.propietario.setCedula(Long.parseLong(this.txtCedula.getText()));
-                    int index = tblPropietarios.getSelectedRow(); // Obtenemos el índice la tabla seleccionada
-                    
-                     /**/
-                    this.storagePropietario.editarPropietario(index, propietario); // Enviamos el objeto propietario con su índice obtenido
-                    this.rellenarTabla(); // Rellenamos/Actualizamos la tabla
-                    this.limpiarCampos(); // Limpiamos los campos
-                    this.cambiarPestañaT(); // Cambiamos la pestaña
-
-                }
-
-            } catch (NumberFormatException es) { // En caso de que hayan ingresado mal los datos
-
-                JOptionPane.showMessageDialog(this, "Por favor ingrese correctamente los datos");
-                System.out.println(es.getCause());
-
-            }
-        } else { // En caso de que hayan campos en blanco
-            JOptionPane.showMessageDialog(this, "Por favor rellene todos los campos");
-        }
-        
+        this.btnGuardar();
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void btnNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNuevoActionPerformed
-        // Al momento de que den al botón de nuevo
         tbdPropietarios.setTitleAt(1, "Añadir");
         this.cambiarPestañaEN();
 
@@ -490,127 +453,57 @@ public class DlgPropietarios extends javax.swing.JDialog {
         if (Character.isDigit(tecla) && tecla != KeyEvent.VK_BACK_SPACE) {
             evt.consume();
         }
-
     }//GEN-LAST:event_txtNombreKeyTyped
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-        // Cuando la ventana se abre
         tbdPropietarios.setEnabledAt(1, false);
         this.rellenarTabla();
 
     }//GEN-LAST:event_formWindowOpened
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
-        // Botón que llama al método que elimina un propietario enviándole un índice
-        try {
-            int index = tblPropietarios.getSelectedRow();
-            this.storagePropietario.borrarPropietario(index);
-            this.rellenarTabla();
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un propietario");
-            System.out.println(ex.getCause());
-        }
+        this.btnEliminar();
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
-        // Botón que obtiene los datos de la ventana
-        try {
-            this.limpiarCampos();
-            int index = tblPropietarios.getSelectedRow();
-            this.propietario = new Propietario();
-
-            this.propietario = this.storagePropietario.obtenerPropietario(index);
-            txtNombre.setText(this.propietario.getNombre());
-            txtCedula.setText(Long.toString(this.propietario.getCedula()));
-            txtEmail.setText(propietario.getCorrero());
-            txtTelefono.setText(propietario.getTelefono());
-
-            if (propietario.getGenero() == 'F') {
-                rdbF.setSelected(true);
-            } else {
-                rdbM.setSelected(true);
-            }
-
-            tbdPropietarios.setTitleAt(1, "Editar");
-            this.cambiarPestañaEN();
-
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un propietario");
-            System.out.println(ex.getCause());
-        }
+        this.btnEditar();
 
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
-        // Regresa a la pestaña anterior
         this.limpiarCampos();
         this.cambiarPestañaT();
     }//GEN-LAST:event_btnCancelarActionPerformed
 
     private void btnLimpiarCamposActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarCamposActionPerformed
-        // Botón que permite limpiar los campos
         this.limpiarCampos();
     }//GEN-LAST:event_btnLimpiarCamposActionPerformed
 
-    private void txtTelefonoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtTelefonoKeyTyped
-        // Solo acepta numeros
-        char tecla;
-        tecla = evt.getKeyChar();
-        if (!Character.isDigit(tecla) && tecla != KeyEvent.VK_BACK_SPACE) {
-            evt.consume();
-        }
-
-    }//GEN-LAST:event_txtTelefonoKeyTyped
-
     private void btnInicioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInicioActionPerformed
-        // Cerramos la ventana
-        this.dispose();
-
+            this.dispose();
     }//GEN-LAST:event_btnInicioActionPerformed
 
     private void tblPropietariosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblPropietariosMouseClicked
         // Si el título de la pestaña dice "Selecciona" y la cantidad de clicks es de 2, entonces obtiene el índice y cierra la ventana
-        if (evt.getClickCount() == 2 && tbdPropietarios.getTitleAt(0).equals("Seleccionar")) {
-            inPro = tblPropietarios.getSelectedRow();
-            System.out.println("Se ha seleccionado el propietario: " + storagePropietario.obtenerPropietario(inPro).getNombre());
-            this.dispose();
-        }
-
+        this.clickTabla(evt);
+        
     }//GEN-LAST:event_tblPropietariosMouseClicked
-
+    
     private void txtBuscarKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyTyped
-        // TODO add your handling code here:
-        this.ENCABEZADO_TABLA = new String[]{"Nombre", "Cédula", "Género", "E-mail", "Teléfono"};
-        this.propietario = new Propietario();
-        // Creamos el modelo restringiendo que se editen sus celdas.
-        this.propietariosTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
-            @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return false;
+        try {
+            if (txtBuscar.getText().length() == 0) {
+                this.rellenarTabla();
+
+            } else {
+                // Obtenemos el modelo con la tabla de la GUI ya cargada
+                this.modeloTabla = operacion.BuscarFiltrado(Enlace.crearEnlace(), "nomPropiet", txtBuscar.getText(), "TblPropietario");
+                tblPropietarios.setModel(modeloTabla);
+
             }
-        };
-
-        if (txtBuscar.getText().length() == 0) {
-
-            this.rellenarTabla();
-
-        } else {
-            for (byte i = 0; i < storagePropietario.getTotal(); i++) {
-
-                this.propietario = storagePropietario.obtenerPropietario(i);
-                if (propietario.getNombre().regionMatches(true, 0, txtBuscar.getText(), 0, txtBuscar.getText().length())) {
-
-                    Object registro[] = {this.propietario.getNombre(), this.propietario.getCedula(), this.propietario.getGenero(),
-                        this.propietario.getCorrero(), this.propietario.getTelefono()};
-
-                    this.propietariosTabla.addRow(registro);
-
-                }
-            }
-            tblPropietarios.setModel(propietariosTabla);
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgPropietarios.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_txtBuscarKeyTyped
-    
 
     /**
      * @param args the command line arguments
@@ -665,6 +558,7 @@ public class DlgPropietarios extends javax.swing.JDialog {
     private javax.swing.ButtonGroup btngGeneros;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblCedula;
+    private javax.swing.JLabel lblDireccion;
     private javax.swing.JLabel lblEmail;
     private javax.swing.JLabel lblGenero;
     private javax.swing.JLabel lblNombre;
@@ -680,14 +574,14 @@ public class DlgPropietarios extends javax.swing.JDialog {
     private javax.swing.JTable tblPropietarios;
     private javax.swing.JTextField txtBuscar;
     private javax.swing.JTextField txtCedula;
+    private javax.swing.JTextField txtDireccion;
     private javax.swing.JTextField txtEmail;
     private javax.swing.JTextField txtNombre;
-    private javax.swing.JFormattedTextField txtTelefono;
+    private javax.swing.JTextField txtTelefono;
     // End of variables declaration//GEN-END:variables
 
-    
     /**
-     * Método que cambia de pestaña de la tabla
+     * Método que pasa a la pestaña principal
      */
     private void cambiarPestañaT() {
         tbdPropietarios.setEnabledAt(0, true);
@@ -696,7 +590,7 @@ public class DlgPropietarios extends javax.swing.JDialog {
     }
 
     /**
-     * Método que cambia de pestaña a editar/nuevo
+     * Método que pasa a la pestaña editar/nuevo
      */
     private void cambiarPestañaEN() {
         tbdPropietarios.setEnabledAt(1, true);
@@ -704,50 +598,30 @@ public class DlgPropietarios extends javax.swing.JDialog {
         tbdPropietarios.setEnabledAt(0, false);
     }
 
-    /**
-     * Método que limpia los campos
-     */
+    
     private void limpiarCampos() {
 
         btngGeneros.clearSelection();
 
         txtCedula.setText("");
+        txtCedula.setEditable(true);
         txtEmail.setText("");
         txtNombre.setText("");
         txtTelefono.setText(null);
-        //txtTelefono.repaint();
 
     }
-
-    /**
-     * Método para rellenar la tabla
-     */
+    
     private void rellenarTabla() {
 
-        this.ENCABEZADO_TABLA = new String[]{"Nombre", "Cédula", "Género", "E-mail", "Teléfono"};
-        this.propietario = new Propietario();
-        // Creamos el modelo restringiendo que se editen sus celdas.
-        this.propietariosTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
-            @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return false;
-            }
-        };
+        try {
 
-        for (byte i = 0; i < storagePropietario.getTotal(); i++) {
-
-            this.propietario = storagePropietario.obtenerPropietario(i);
-
-            Object registro[] = {this.propietario.getNombre(), this.propietario.getCedula(), this.propietario.getGenero(),
-                this.propietario.getCorrero(), this.propietario.getTelefono()};
-
-            this.propietariosTabla.addRow(registro);
-
+            this.modeloTabla = operacion.TodoPropietarios(Enlace.crearEnlace(), "Propietarios");
+            this.tblPropietarios.setModel(this.modeloTabla);
+            lblTotal.setText("Total de propietarios: " + modeloTabla.getRowCount());
+            //Enlace.cerrar(); // Cerramos la conexión
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgPropietarios.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        this.tblPropietarios.setModel(this.propietariosTabla);
-        lblTotal.setText("Total de propietarios: " + storagePropietario.getTotal());
-
     }
 
     /**
@@ -768,14 +642,13 @@ public class DlgPropietarios extends javax.swing.JDialog {
     }
 
     /**
-     * Método para comprobar si se ha ingresado todos los datos
+     * Comprueba si se ha ingresado todos los datos
      */
     private boolean verificarDatos() {
         return obtenerGenero() != 'N' && !txtCedula.getText().isEmpty() && !txtNombre.getText().isEmpty()
                 && !txtEmail.getText().isEmpty() && !txtTelefono.getText().isEmpty();
-
     }
-    
+
     public int getInPro() {
         return inPro;
     }
@@ -783,15 +656,151 @@ public class DlgPropietarios extends javax.swing.JDialog {
     public void setInPro(int inPro) {
         this.inPro = inPro;
     }
-    
-    
-    //*****************************************************************************************//
-    
-    private void guardarPropietario(Propietario propiet){
-        
-        
-        
-        
+
+    /**
+     * Se llama cuando se hace doble click a una fila de la tabla para extraer datos del 
+     * propietario seleccionado
+     * @param evt 
+     */
+    private void clickTabla(java.awt.event.MouseEvent evt){
+        if (evt.getClickCount() == 2 && tbdPropietarios.getTitleAt(0).equals("Seleccionar")) {
+            inPro = tblPropietarios.getSelectedRow();
+            System.out.println("Se ha seleccionado el propietario: " + storagePropietario.obtenerPropietario(inPro).getNombre());
+            this.dispose();
+        }
     }
     
+    /**
+     * Se llama en el botón de eliminar
+     */
+    private void btnEliminar() {
+        try {
+            int cedula = Integer.parseInt(tblPropietarios.getValueAt(tblPropietarios.getSelectedRow(), 1).toString());
+            System.out.println("Cédula seleccionada: " + cedula);
+
+            //this.storagePropietario.borrarPropietario(index);
+            if (operacion.eliminarPropietario(Enlace.crearEnlace(), cedula)) {
+                JOptionPane.showMessageDialog(this, "Se ha eliminado exitosamente");
+                this.rellenarTabla();
+
+            } else {
+                JOptionPane.showMessageDialog(this, "No se pudo eliminar, posiblemente no existe el propietario");
+            }
+
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un propietario");
+            System.out.println(ex.getCause());
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgPropietarios.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Se llama para guardar al propietario
+     */
+    private void btnGuardar() {
+        if (this.verificarDatos()) { // Verificamos de que no hayan espacios en blanco
+
+            try {
+
+                this.propietario = new Propietario(); // Inicializamos el objeto propietario
+                this.propietario.setNombre(this.txtNombre.getText());
+                this.propietario.setGenero(this.obtenerGenero());
+                this.propietario.setCorreo(this.txtEmail.getText());
+                this.propietario.setTelefono(Integer.parseInt(this.txtTelefono.getText()));
+                this.propietario.setDireccion(this.txtDireccion.getText());
+
+                if (tbdPropietarios.getTitleAt(1).equalsIgnoreCase("Añadir")) { // Si el título dice añadir, entonces guardamos al propietario
+                    // Antes de todo, comprobamos de que la cédula que ingresaron sea diferente con las que ya están registradas
+                    //if (storagePropietario.comprobarCédula(Long.parseLong(this.txtCedula.getText()))) {
+                    // Esta operación nos retorna la cantidad de coincidencia con el dato que necesitamos saber
+                    // Si existe 0, entonces se agrega el usuario
+                    if (operacion.ExisteUsuario(Enlace.crearEnlace(), Integer.parseInt(txtCedula.getText()), "Propietario") == 0) {
+
+                        this.propietario.setCedula(Long.parseLong(this.txtCedula.getText()));
+                        //this.storagePropietario.guardaPropietario(propietario);
+                        // Se llama el método para hacer la conexion y enviar los datos
+                        if (this.operacion.guardarPropietario(Enlace.crearEnlace(), propietario)) {
+
+                            JOptionPane.showMessageDialog(this, "Se ha registrado");
+                            this.rellenarTabla(); // Rellenamos/Actualizamos la tabla
+                            this.limpiarCampos(); // Limpiamos los campos
+                            this.cambiarPestañaT(); // Cambiamos la pestaña
+
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Ha un ocurrido un error al intentar guardar");
+                        }
+
+                    } else { // En caso de que la cédula ya haya sido registrada
+
+                        JOptionPane.showMessageDialog(this, "Esta cédula ya fue registrada");
+                        txtCedula.setText("");
+
+                    }
+
+                } else { // Si el título no dice Añadir, entonces es editar
+
+                    this.propietario.setCedula(Long.parseLong(this.txtCedula.getText()));
+                    //int index = tblPropietarios.getSelectedRow(); // Obtenemos el índice la tabla seleccionada
+
+                    /**/
+                    //this.storagePropietario.editarPropietario(index, propietario); // Enviamos el objeto propietario con su índice obtenido
+                    if (operacion.editarPropietario(Enlace.crearEnlace(), propietario)) {
+
+                        JOptionPane.showMessageDialog(this, "Se ha editado al usuario");
+                        this.rellenarTabla(); // Rellenamos/Actualizamos la tabla
+                        this.limpiarCampos(); // Limpiamos los campos
+                        this.cambiarPestañaT(); // Cambiamos la pestaña
+
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Hubo un error al intentar editar");
+                    }
+                }
+
+            } catch (NumberFormatException es) { // En caso de que hayan ingresado mal los datos
+
+                JOptionPane.showMessageDialog(this, "Por favor ingrese correctamente los datos");
+                System.out.println(es.getCause());
+
+            } catch (SQLException | ClassNotFoundException ex) {
+                System.out.println("Problema al guardar propietario: " + ex.getMessage());
+            }
+        } else { // En caso de que hayan campos en blanco
+            JOptionPane.showMessageDialog(this, "Por favor rellene todos los campos");
+        }
+    }
+
+    /**
+     * Se llama para preparar los datos a editar
+     */
+    private void btnEditar() {
+        try {
+            this.limpiarCampos();
+            int index = tblPropietarios.getSelectedRow();
+            this.propietario = new Propietario();
+            this.btnLimpiarCampos.setEnabled(false);
+            
+            
+            //this.propietario = this.storagePropietario.obtenerPropietario(index);
+            txtNombre.setText(tblPropietarios.getValueAt(index, 0).toString());
+            txtCedula.setText(tblPropietarios.getValueAt(index, 1).toString());
+            txtCedula.setEditable(false);
+            txtEmail.setText(tblPropietarios.getValueAt(index, 3).toString());
+            txtTelefono.setText(tblPropietarios.getValueAt(index, 4).toString());
+            txtDireccion.setText(tblPropietarios.getValueAt(index, 5).toString());
+
+            if (tblPropietarios.getValueAt(index, 2).toString().charAt(0) == 'F') {
+                rdbF.setSelected(true);
+            } else {
+                rdbM.setSelected(true);
+            }
+
+            tbdPropietarios.setTitleAt(1, "Editar");
+            this.cambiarPestañaEN();
+
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un propietario");
+            System.out.println(ex.getCause());
+        }
+    }
 }
