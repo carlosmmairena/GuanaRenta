@@ -1,7 +1,7 @@
 
 CREATE DATABASE BD_GuanaRenta;
-
 USE BD_GuanaRenta;
+
 
 CREATE TABLE TblPropietario (
 cedPropiet INT NOT NULL, 
@@ -502,6 +502,23 @@ BEGIN
     END IF;
     
 END $$
+DELIMITER ;
+
+-- Procedimiento que muestra todos los datos de las tablas
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `stpMostrarDatos`(
+$Tabla VARCHAR(20))
+BEGIN
+	
+    CASE $Tabla
+				WHEN 'Propietarios' THEN SELECT * FROM TblPropietario;
+                WHEN 'Viviendas' THEN SELECT * FROM TblVivienda;
+                WHEN 'Inquilinos' THEN SELECT * FROM TblInquilino;
+                WHEN 'Alquileres' THEN SELECT * FROM TblAlquileres;
+                WHEN 'Mensualidades' THEN SELECT * FROM TblMensualidades;
+    END CASE;
+    
+END$$
 DELIMITER ;
 
 -- Por aquello xd
