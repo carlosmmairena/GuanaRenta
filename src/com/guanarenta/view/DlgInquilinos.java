@@ -502,53 +502,12 @@ public class DlgInquilinos extends javax.swing.JDialog {
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
-        // Botón que llama al método que elimina un inquilino enviándole un índice
-        try {
-            int index = tblInquilinos.getSelectedRow();
-            this.storageInquilinos.borrarInquilino(index);
-            this.rellenarTabla();
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un inquilino");
-            System.out.println(ex.getCause());
-        }
-
+        this.btnElimina();
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
         // Botón que obtiene los datos de la ventana
-        try {
-
-            this.limpiarCampos(); // Limpiamos los campos
-            int index = tblInquilinos.getSelectedRow(); // Obtenemos el índice de la tabla donde se seleccionó un inquilino
-            this.inquilino = new Inquilino(); // Inicializamos al inquilino
-
-            this.inquilino = this.storageInquilinos.obtenerInquilino(index); // Obtenemos los datos del inquilino seleccionado desde la lista de vectores
-
-            // Obtenemos los datos del inquilino seleccionado
-            txtNombre.setText(this.inquilino.getNomInqui());
-            txtCedula.setText(Long.toString(this.inquilino.getCedInqui()));
-            txtEmail.setText(inquilino.getEmail());
-            txtTelefono.setText(String.valueOf(inquilino.getTelefono()));
-            txtDireccion.setText(this.inquilino.getDireccion());
-            txtOcupacion.setText(this.inquilino.getOcupacion());
-
-            // Falta mostrar la fecha de nacimiento al inquilino en el momento de que se le de editar
-            dtpFechNaci.setDate(this.inquilino.getFechNac());
-
-            if (inquilino.getGenero() == 'F') {
-                rdbF.setSelected(true);
-            } else {
-                rdbM.setSelected(true);
-            }
-
-            tbdInquilinos.setTitleAt(1, "Editar"); // Cambiamos el título de la pestaña
-            this.cambiarPestañaEN(); // Nos dirigimos a la pestaña para editar los campos
-
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            // En caso de que no seleccionaron ningún inquilino
-            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un propietario");
-            System.out.println(ex.getCause());
-        }
+        this.btnEdita();
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
@@ -563,13 +522,7 @@ public class DlgInquilinos extends javax.swing.JDialog {
     }//GEN-LAST:event_btnLimpiarCamposActionPerformed
 
     private void tblInquilinosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblInquilinosMouseClicked
-        // Si el título de la pestaña dice "Selecciona" y la cantidad de clicks es de 2, entonces obtiene el índice y cierra la ventana
-        if (evt.getClickCount() == 2 && tbdInquilinos.getTitleAt(0).equals("Seleccionar")) {
-            this.inQui = tblInquilinos.getSelectedRow();
-            System.out.println("Se ha seleccionado el inquilino: " + storageInquilinos.obtenerInquilino(inQui).getNomInqui());
-            this.dispose();
-        }
-
+        this.enviarInqui(evt);
     }//GEN-LAST:event_tblInquilinosMouseClicked
 
     private void btnInicioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInicioActionPerformed
@@ -579,34 +532,7 @@ public class DlgInquilinos extends javax.swing.JDialog {
 
     private void txtBuscarKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyTyped
         // TODO add your handling code here:
-        this.ENCABEZADO_TABLA = new String[]{"Nombre", "Cédula", "Género", "E-mail", "Teléfono", "Ocupación", "Fecha Nacimiento"};
-        this.inquilino = new Inquilino();
-        this.inquilinosTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
-            @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return false;
-            }
-        };
-
-        if (txtBuscar.getText().length() == 0) {
-            this.rellenarTabla();
-
-        } else {
-            for (byte i = 0; i < storageInquilinos.getTotal(); i++) {
-
-                this.inquilino = storageInquilinos.obtenerInquilino(i);
-                if (inquilino.getNomInqui().regionMatches(true, 0, txtBuscar.getText(), 0, txtBuscar.getText().length())) {
-                    this.inquilino = storageInquilinos.obtenerInquilino(i);
-
-                    Object registro[] = {this.inquilino.getNomInqui(), this.inquilino.getCedInqui(), this.inquilino.getGenero(),
-                        this.inquilino.getEmail(), this.inquilino.getTelefono(), this.inquilino.getOcupacion(),
-                        this.inquilino.getFechNac()};
-                    this.inquilinosTabla.addRow(registro);
-
-                }
-            }
-            tblInquilinos.setModel(inquilinosTabla);
-        }
+        this.btnBuscar();
     }//GEN-LAST:event_txtBuscarKeyTyped
 
     private void txtTelefonoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtTelefonoKeyTyped
@@ -642,6 +568,7 @@ public class DlgInquilinos extends javax.swing.JDialog {
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 DlgInquilinos dialog = new DlgInquilinos(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -694,6 +621,121 @@ public class DlgInquilinos extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     /**
+     * Si el título de la pestaña dice "Selecciona" y la cantidad de clicks es de 2, entonces obtiene el índice y cierra
+     * la ventana
+     *
+     * @param evt
+     */
+    private void enviarInqui(java.awt.event.MouseEvent evt) {
+        if (evt.getClickCount() == 2 && tbdInquilinos.getTitleAt(0).equals("Seleccionar")) {
+            this.inQui = tblInquilinos.getSelectedRow();
+            this.inQui = Integer.parseInt(tblInquilinos.getValueAt(inQui, 1).toString());
+            System.out.println("Se ha seleccionado el inquilino: " + inQui);
+            this.dispose();
+        }
+    }
+    
+    /**
+     * Se llama cuando se está tecleando para buscar un resultado
+     */
+    private void btnBuscar() {
+//        this.ENCABEZADO_TABLA = new String[]{"Nombre", "Cédula", "Género", "E-mail", "Teléfono", "Ocupación", "Fecha Nacimiento"};
+//        this.inquilino = new Inquilino();
+//        this.inquilinosTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
+//            @Override
+//            public boolean isCellEditable(int rowIndex, int columnIndex) {
+//                return false;
+//            }
+//        };
+        try {
+            if (txtBuscar.getText().length() == 0) {
+                this.rellenarTabla();
+
+            } else {
+                //            for (byte i = 0; i < storageInquilinos.getTotal(); i++) {
+//
+//                this.inquilino = storageInquilinos.obtenerInquilino(i);
+//                if (inquilino.getNomInqui().regionMatches(true, 0, txtBuscar.getText(), 0, txtBuscar.getText().length())) {
+//                    this.inquilino = storageInquilinos.obtenerInquilino(i);
+//
+//                    Object registro[] = {this.inquilino.getNomInqui(), this.inquilino.getCedInqui(), this.inquilino.getGenero(),
+//                        this.inquilino.getEmail(), this.inquilino.getTelefono(), this.inquilino.getOcupacion(),
+//                        this.inquilino.getFechNac()};
+//                    this.inquilinosTabla.addRow(registro);
+//
+//                }
+//            }
+                this.inquilinosTabla = operacionI.BuscarFiltrado(Enlace.crearEnlace(), "nomInqui", txtBuscar.getText(), "TblInquilino");
+                tblInquilinos.setModel(inquilinosTabla);
+
+            }
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgInquilinos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Se envía la cédula para eliminar
+     */
+    private void btnElimina() {
+        try {
+            int fila = tblInquilinos.getSelectedRow();
+            fila = Integer.parseInt(tblInquilinos.getValueAt(fila, 1).toString());
+            if (operacionI.eliminarInquilino(Enlace.crearEnlace(), fila)) {
+                JOptionPane.showMessageDialog(this, "Inquilino eliminado del registro");
+            } else {
+                JOptionPane.showMessageDialog(this, "Hubo un inconveniente al intentar eliminar al inquilino");
+            }
+            //this.storageInquilinos.borrarInquilino(fila);
+
+            this.rellenarTabla();
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un inquilino");
+            System.out.println(ex.getCause());
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgInquilinos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Se llama en el botón de editar
+     */
+    private void btnEdita() {
+
+        try {
+            this.limpiarCampos(); // Limpiamos los campos
+            int fila = tblInquilinos.getSelectedRow(); // Obtenemos la fila de la tabla donde se seleccionó un inquilino
+            //this.inquilino = new Inquilino(); // Inicializamos al inquilino
+
+            //this.inquilino = this.storageInquilinos.obtenerInquilino(index); // Obtenemos los datos del inquilino seleccionado desde la lista de vectores
+            // Obtenemos los datos del inquilino seleccionado
+            txtNombre.setText(tblInquilinos.getValueAt(fila, 0).toString());
+            txtCedula.setText(tblInquilinos.getValueAt(fila, 1).toString());
+            txtEmail.setText(tblInquilinos.getValueAt(fila, 3).toString());
+            txtTelefono.setText(tblInquilinos.getValueAt(fila, 4).toString());
+            txtDireccion.setText(tblInquilinos.getValueAt(fila, 7).toString());
+            txtOcupacion.setText(tblInquilinos.getValueAt(fila, 5).toString());
+
+            // Falta mostrar la fecha de nacimiento al inquilino en el momento de que se le de editar
+            dtpFechNaci.setDate((Date) tblInquilinos.getValueAt(fila, 6));
+
+            if (tblInquilinos.getValueAt(fila, 2).toString().charAt(0) == 'F') {
+                rdbF.setSelected(true);
+            } else {
+                rdbM.setSelected(true);
+            }
+
+            tbdInquilinos.setTitleAt(1, "Editar"); // Cambiamos el título de la pestaña
+            this.cambiarPestañaEN(); // Nos dirigimos a la pestaña para editar los campos
+
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            // En caso de que no seleccionaron ningún inquilino
+            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un inquilino");
+            System.out.println(ex.getCause());
+        }
+    }
+
+    /**
      * Se llama al pulsar el botón guardar
      */
     private void btnGuarda() {
@@ -716,15 +758,19 @@ public class DlgInquilinos extends javax.swing.JDialog {
                 this.inquilino.setCedInqui(Long.parseLong(txtCedula.getText()));
                 this.inquilino.setFechNac(new java.sql.Date(fechObt)); // Obtenemos la fecha
                 this.inquilino.setGenero(this.obtenerGenero());
+                this.inquilino.setCedInqui(Long.parseLong(txtCedula.getText()));
 
                 if (tbdInquilinos.getTitleAt(1).equals("Añadir")) { // Si el título dice Añadir
 
-                    if (operacionI.ExisteUsuario(Enlace.crearEnlace(), inquilino.getCedInqui(), "Inquilino") > 0) {
+                    if (operacionI.ExisteUsuario(Enlace.crearEnlace(), inquilino.getCedInqui(), "Inquilino") == 0) {
 
                         //this.inquilino.setCedInqui(Long.parseLong(txtCedula.getText()));
                         //this.storageInquilinos.guardaInquilino(inquilino);
                         if (operacionI.guardarInquilino(Enlace.crearEnlace(), inquilino)) {
                             JOptionPane.showMessageDialog(this, "Inquilino guardado");
+                            this.limpiarCampos();
+                            this.rellenarTabla();
+                            this.cambiarPestañaTa();
                         } else {
                             JOptionPane.showMessageDialog(this, "Hubo inconvenientes para guardar el inquilino");
                         }
@@ -737,16 +783,14 @@ public class DlgInquilinos extends javax.swing.JDialog {
 
                 } else { // Si el título no dice añadir, entonces es para editar
                     // DEBERÍAMOS COMPROBAR DE QUE LA CÉDULA NO APAREZCA MÁS DE 1 VEZ, YA QUE LA 1RA VEZ ES CUANDO YA SE REGISTRÓ
-
-                    this.inquilino.setCedInqui(Long.parseLong(txtCedula.getText()));
-                    int index = tblInquilinos.getSelectedRow();
+                    //this.inquilino.setCedInqui(Long.parseLong(txtCedula.getText()));
+                    operacionI.editarPropietario(Enlace.crearEnlace(), inquilino);
+                    this.limpiarCampos();
+                    this.rellenarTabla();
+                    this.cambiarPestañaTa();
+                    //int index = tblInquilinos.getSelectedRow();
                     //this.storageInquilinos.editarInquilino(index, this.inquilino);
-
                 }
-
-                this.limpiarCampos();
-                this.rellenarTabla();
-                this.cambiarPestañaTa();
 
             } catch (NumberFormatException es) { // En caso de que el usuario ha digitado mal los tipos de datos
                 JOptionPane.showMessageDialog(this, "Por favor ingrese correctamente los datos.");

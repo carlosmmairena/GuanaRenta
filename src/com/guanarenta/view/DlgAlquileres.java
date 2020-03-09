@@ -4,13 +4,19 @@
 package com.guanarenta.view;
 
 import com.guanarenta.clases.Alquileres;
+import com.guanarenta.connections.Enlace;
+import com.guanarenta.connections.OperacionesAlquiler;
 import com.guanarenta.storage.StorageAlquileres;
 import com.guanarenta.storage.StorageInquilinos;
 import com.guanarenta.storage.StoragePropietarios;
 import com.guanarenta.storage.StorageViviendas;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -27,8 +33,9 @@ public class DlgAlquileres extends javax.swing.JDialog {
     StoragePropietarios storagePropietarios;
     Alquileres alquiler;
 
-    String ENCABEZADO_TABLA[];
+    //String ENCABEZADO_TABLA[];
     DefaultTableModel alquileresTabla;
+    OperacionesAlquiler operacionAl;
     private int inQui;
     private int inVi;
 
@@ -41,6 +48,8 @@ public class DlgAlquileres extends javax.swing.JDialog {
     public DlgAlquileres(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        this.operacionAl = new OperacionesAlquiler();
+
         this.storageAlquileres = new StorageAlquileres();
         this.alquiler = new Alquileres();
         this.storageInquilinos = new StorageInquilinos();
@@ -56,10 +65,13 @@ public class DlgAlquileres extends javax.swing.JDialog {
      * @param storageAlquileres Contiene los vectores de alquileres
      * @param storageInquilinos Contiene los vectores de inquilinos
      * @param storageViviendas Contiene los vectores de viviendas
+     * @param storagePropietarios
      */
     public DlgAlquileres(java.awt.Frame parent, boolean modal, StorageAlquileres storageAlquileres, StorageInquilinos storageInquilinos, StorageViviendas storageViviendas, StoragePropietarios storagePropietarios) {
         super(parent, modal);
         initComponents();
+        this.operacionAl = new OperacionesAlquiler();
+
         this.storageInquilinos = storageInquilinos;
         this.storageViviendas = storageViviendas;
         this.storageAlquileres = storageAlquileres;
@@ -479,42 +491,9 @@ public class DlgAlquileres extends javax.swing.JDialog {
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
-        // Botón que obtiene los datos de la ventana
-        // Falta validar los campos
-        try {
-
-            this.limpiarCampos();
-            int index = tblAlquileres.getSelectedRow();
-            this.alquiler = storageAlquileres.obtenerAlquiler(index);
-            this.recuperaIdCed();
-
-            txtNumAlquiler.setText(Integer.toString(this.alquiler.getNumAlquiler())); // Obtenemos el número de alquiler.
-            txtCantAdultos.setText(Integer.toString(this.alquiler.getNumAdultos()));
-            txtCantMeses.setText(Integer.toString(this.alquiler.getCanMeses()));
-            txtCantNiños.setText(Integer.toString(this.alquiler.getNumNinos()));
-            txtCedulaInqui.setText(Long.toString(this.alquiler.getCedInquilino()));
-            txtDeposito.setText(Integer.toString(this.alquiler.getDepositoGarantia()));
-            txtIDVivienda.setText(Integer.toString(this.alquiler.getIdVivienda()));
-            txtMontoAlquiler.setText(Integer.toString(this.alquiler.getPrecioAlquiler()));
-            txtNumAlquiler.setText(Integer.toString(this.alquiler.getNumAlquiler()));
-            spnAumentos.setValue(this.alquiler.getPorcIncremAnual());
-            dtpFechContrato.setDate(this.alquiler.getFechContrato());
-
-            if (alquiler.getEstado().equals("Cancelado")) {
-                rdbCancelado.setSelected(true);
-            }
-
-            tbdAlquileres.setTitleAt(1, "Editar");
-            rdbCancelado.setEnabled(true);
-            rdbVigente.setEnabled(true);
-            this.cambiarPestañaEN();
-
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un alquiler registrado");
-            System.out.println(ex.getCause());
-        }
+        this.btnEdita();
     }//GEN-LAST:event_btnEditarActionPerformed
-
+    
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // Al momento en que se abre la ventana.
         this.rellenarTblAlquileres();
@@ -539,52 +518,7 @@ public class DlgAlquileres extends javax.swing.JDialog {
     }//GEN-LAST:event_btnCancelarActionPerformed
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
-        // Botón que permite enviar los datos del nuevo alquilier al vector de alquileres
-        try {
-
-            this.alquiler = new Alquileres(); // Inicializamos el objeto
-
-            long cedIn = storageInquilinos.obtenerInquilino(this.inQui).getCedInqui(); // Obtenemos la cédula de un inquilino seleccionado en la tabla
-            int indexId = storageViviendas.obtenerVivienda(this.inVi).getIdVivienda(); // Obtenemos el ID de una vivienda seleccionada en la tabla
-
-            this.storageViviendas.obtenerVivienda(inVi).setEstado("Alquilada"); // Colocamos como alquilada al estado de la vivienda
-            this.alquiler.setCanMeses(Byte.parseByte(txtCantMeses.getText()));
-            this.alquiler.setDepositoGarantia(Integer.parseInt(txtDeposito.getText()));
-            this.alquiler.setCedInquilino(cedIn); // Enviamos la cédula obtenida
-            this.alquiler.setIdVivienda(indexId); // Enviamos el ID de la vivienda obtenida
-            this.alquiler.setPorcIncremAnual(Byte.parseByte(spnAumentos.getValue().toString())); // Obtenemos el procentaje
-            this.alquiler.setPrecioAlquiler(Integer.parseInt(txtMontoAlquiler.getText()));
-
-            // Cambiar este calendario o al menos el diseño
-            long obtFech = dtpFechContrato.getDate().getTime(); // Obtenemos la fechan en el tipo long
-            this.alquiler.setFechContrato(new java.sql.Date(obtFech)); // Obtenemos la fecha de contrato
-
-            // En este caso es porque seleccionaron un estado de alquiler
-            if (tbdAlquileres.getTitleAt(1).equals("Añadir")) { // Si el título dice Añadir
-                this.alquiler.setNumAlquiler(storageAlquileres.crearNum()); // Creamos el número del alquiler
-                this.storageAlquileres.GuardarAlquiler(this.alquiler); // Agrega este objeto alquiler a los vectores de alquiler
-
-            } else { // Si el título no dice añadir
-                int index = tblAlquileres.getSelectedRow(); // Obtiene el índice de la tabla seleccionado para editar
-                this.estadosViviendaAlquiler();
-                this.alquiler.setNumAlquiler(Integer.parseInt(txtNumAlquiler.getText()));
-                this.storageAlquileres.EditarAlquiler(index, this.alquiler); // Envía al objeto con su respectivo índice para editar
-            }
-
-            this.cambiarPestañaT();
-            this.limpiarCampos();
-
-        } catch (ArrayIndexOutOfBoundsException es) {
-
-            JOptionPane.showMessageDialog(this, "Por favor seleccione una vivienda y un inquilino.");
-            System.out.println(es.getCause());
-
-        } catch (NumberFormatException esc) {
-
-            System.out.println(esc.getMessage());
-            JOptionPane.showMessageDialog(this, "Ingrese correctamente los datos");
-
-        }
+        this.btnGuarda();
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void txtCantNiñosKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtCantNiñosKeyTyped
@@ -630,31 +564,25 @@ public class DlgAlquileres extends javax.swing.JDialog {
     }//GEN-LAST:event_btnLimpiarCamposActionPerformed
 
     private void btnSelecInquilinoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelecInquilinoActionPerformed
-        // Abrimos la ventana de los inquilinos
+        this.selecInquilino();
+    }//GEN-LAST:event_btnSelecInquilinoActionPerformed
+
+    private void selecInquilino() {
         try {
             DlgInquilinos inquilW = new DlgInquilinos(null, true, storageInquilinos, this.inQui);
             inquilW.setVisible(true);
             this.inQui = inquilW.getInQui();
-            txtCedulaInqui.setText(Long.toString(storageInquilinos.obtenerInquilino(inQui).getCedInqui()));
+            txtCedulaInqui.setText(Long.toString(this.inQui));
+            System.out.println("Inquilino extraído: " + inQui);
+
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println(e.getCause());
             JOptionPane.showMessageDialog(this, "No ha seleccionado nigún inquilino.");
         }
-
-    }//GEN-LAST:event_btnSelecInquilinoActionPerformed
+    }
 
     private void btnSelecIdViviendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelecIdViviendaActionPerformed
-        // Abrimos la ventana de las viviendas
-        try {
-            DlgViviendas viviW = new DlgViviendas(null, true, this.storagePropietarios, storageViviendas, this.inVi);
-            viviW.setVisible(true);
-            this.inVi = viviW.getInVi();
-            txtIDVivienda.setText(Integer.toString(storageViviendas.obtenerVivienda(inVi).getIdVivienda()));
-        } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println(e.getCause());
-            JOptionPane.showMessageDialog(this, "No ha seleccionado niguna vivienda.");
-        }
-
+        this.selecIdVivienda();
     }//GEN-LAST:event_btnSelecIdViviendaActionPerformed
 
     private void btnInicioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInicioActionPerformed
@@ -663,39 +591,8 @@ public class DlgAlquileres extends javax.swing.JDialog {
     }//GEN-LAST:event_btnInicioActionPerformed
 
     private void txtBuscarKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyTyped
-        // TODO add your handling code here:
-        this.ENCABEZADO_TABLA = new String[]{"Nombre", "Cédula", "Género", "E-mail", "Teléfono"};
-        this.alquiler = new Alquileres();
-        // Creamos el modelo restringiendo que se editen sus celdas.
-        this.alquileresTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
-            @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return false;
-            }
-        };
-
-        if (txtBuscar.getText().length() == 0) {
-
-            this.rellenarTblAlquileres();
-
-        } else {
-            for (byte i = 0; i < storageAlquileres.getTotal(); i++) {
-
-                this.alquiler = storageAlquileres.obtenerAlquiler(i);
-                if (Integer.toString(alquiler.getIdVivienda()).regionMatches(true, 0, txtBuscar.getText(), 0, txtBuscar.getText().length())) {
-
-                    Object registro[] = {this.alquiler.getNumAlquiler(), this.alquiler.getFechContrato(), this.alquiler.getEstado(),
-                        this.alquiler.getIdVivienda(), this.alquiler.getCedInquilino(), this.alquiler.getPrecioAlquiler(),
-                        this.alquiler.getDepositoGarantia(), this.alquiler.getPorcIncremAnual() + "%"};
-
-                    this.alquileresTabla.addRow(registro);
-
-                }
-            }
-            tblAlquileres.setModel(alquileresTabla);
-        }
+        this.btnBuscar();
     }//GEN-LAST:event_txtBuscarKeyTyped
-
 
     /**
      * @param args the command line arguments
@@ -713,19 +610,16 @@ public class DlgAlquileres extends javax.swing.JDialog {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(DlgAlquileres.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(DlgAlquileres.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(DlgAlquileres.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(DlgAlquileres.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
+        //</editor-fold>
+
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 DlgAlquileres dialog = new DlgAlquileres(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -785,9 +679,201 @@ public class DlgAlquileres extends javax.swing.JDialog {
     private javax.swing.JTextField txtMontoAlquiler;
     private javax.swing.JTextField txtNumAlquiler;
     // End of variables declaration//GEN-END:variables
+    
+    /**
+     * Este se llama para editar los datos del alquiler seleccionado
+     */
+    private void btnEdita(){
+        try {
+            // Falta validar los campos
+
+            this.limpiarCampos();
+            int fila = tblAlquileres.getSelectedRow();
+            //this.alquiler = storageAlquileres.obtenerAlquiler(index);
+            
+            // Buscamos el registro en la BD y luego lo agregamos a nuestro objeto alquiler
+            ArrayList<Alquileres> alquiAr = operacionAl.FiltroBD(Enlace.crearEnlace(), "numAlquiler",
+                    tblAlquileres.getValueAt(fila, 0).toString(), "TblAlquileres");
+            this.alquiler = alquiAr.get(0);
+            
+            // Obteníamos los datos desde el vector
+            // this.recuperaIdCed();
+
+            txtNumAlquiler.setText(Integer.toString(this.alquiler.getNumAlquiler())); // Obtenemos el número de alquiler.
+            txtCantAdultos.setText(Integer.toString(this.alquiler.getNumAdultos()));
+            txtCantMeses.setText(Integer.toString(this.alquiler.getCanMeses()));
+            txtCantNiños.setText(Integer.toString(this.alquiler.getNumNinos()));
+            txtCedulaInqui.setText(Long.toString(this.alquiler.getCedInquilino()));
+            txtDeposito.setText(Double.toString(this.alquiler.getDepositoGarantia()));
+            txtIDVivienda.setText(Integer.toString(this.alquiler.getIdVivienda()));
+            txtMontoAlquiler.setText(Double.toString(this.alquiler.getPrecioAlquiler()));
+            spnAumentos.setValue(this.alquiler.getPorcIncremAnual());
+            dtpFechContrato.setDate(this.alquiler.getFechContrato());
+
+            if (alquiler.getEstado().equals("Cancelado")) {
+                rdbCancelado.setSelected(true);
+            } else if (alquiler.getEstado().equals("Vigente")){
+                rdbVigente.setSelected(true);
+            } else {
+                System.out.println("Este alquiler está vencido, entonces se pone vigente al cancelar "
+                        + "la mensualidads");
+            }
+
+            tbdAlquileres.setTitleAt(1, "Editar");
+            rdbCancelado.setEnabled(true);
+            rdbVigente.setEnabled(true);
+            this.cambiarPestañaEN();
+
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un alquiler registrado");
+            System.out.println(ex.getCause());
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgAlquileres.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Se llama para registrar un alquiler
+     */
+    private void btnGuarda() {
+        try {
+            /*
+            En este método deben pasar lo siguiente:
+                1. Cuando se guarde el alquiler, el estado de la vivienda seleccionada debe pasar a "Alquilada".
+                2. La fecha de contrato no debe ser un día pasado.
+                3. No se puede alquilar una vivienda que tenga un estado diferente a "Disponible".
+                4. Una vez guardado el alquiler, se debe tener en cuenta el tiempo del alquiler, si se pasa cambia
+            al estado de "vencido".
+                5. El estado por defecto del alquiler es "Vigente", ya que uno paga antes el alquiler y no después
+             */
+
+            this.alquiler = new Alquileres(); // Inicializamos el objeto
+
+            //long cedIn = storageInquilinos.obtenerInquilino(this.inQui).getCedInqui(); // Obtenemos la cédula de un inquilino seleccionado en la tabla
+            //int indexId = storageViviendas.obtenerVivienda(this.inVi).getIdVivienda(); // Obtenemos el ID de una vivienda seleccionada en la tabla
+
+            //this.storageViviendas.obtenerVivienda(inVi).setEstado("Alquilada"); // Colocamos como alquilada al estado de la vivienda
+            // Encontrar otra manera de cambiar el estado de la vivienda seleccionada
+            this.alquiler.setCanMeses(Byte.parseByte(txtCantMeses.getText()));
+            this.alquiler.setDepositoGarantia(Double.parseDouble(txtDeposito.getText()));
+            this.alquiler.setCedInquilino(Long.parseLong(txtCedulaInqui.getText())); // Enviamos la cédula obtenida
+            this.alquiler.setIdVivienda(Integer.parseInt(txtIDVivienda.getText())); // Enviamos el ID de la vivienda obtenida
+            this.alquiler.setPorcIncremAnual(Byte.parseByte(spnAumentos.getValue().toString())); // Obtenemos el procentaje
+            this.alquiler.setPrecioAlquiler(Double.parseDouble(txtMontoAlquiler.getText()));
+            //this.alquiler.setNumAlquiler(Integer.parseInt(txtNumAlquiler.getText()));
+
+            // Cambiar este calendario o al menos el diseño
+            long obtFech = dtpFechContrato.getDate().getTime(); // Obtenemos la fechan en el tipo long
+            this.alquiler.setFechContrato(new java.sql.Date(obtFech)); // Obtenemos la fecha de contrato
+
+            // En este caso es porque seleccionaron un estado de alquiler
+            if (tbdAlquileres.getTitleAt(1).equals("Añadir")) { // Si el título dice Añadir
+
+                if (operacionAl.guardarAlquiler(Enlace.crearEnlace(), alquiler)) {
+                    JOptionPane.showMessageDialog(this, "Alquiler registrado");
+                    this.cambiarPestañaT();
+                    this.limpiarCampos();
+
+                } else {
+                    JOptionPane.showMessageDialog(this, "Hubo un inconveniente al intentar guardar el alquiler");
+                }
+                // El número de alquiler se crea automáticamente en la BD
+                //this.alquiler.setNumAlquiler(storageAlquileres.crearNum()); // Creamos el número del alquiler
+                //this.storageAlquileres.GuardarAlquiler(this.alquiler); // Agrega este objeto alquiler a los vectores de alquiler
+
+            } else { // Si el título no dice añadir
+                //int index = tblAlquileres.getSelectedRow(); // Obtiene el índice de la tabla seleccionado para editar
+                this.alquiler.setNumAlquiler(Integer.parseInt(txtNumAlquiler.getText()));
+                this.estadosViviendaAlquiler();
+                //this.alquiler.setNumAlquiler(Integer.parseInt(txtNumAlquiler.getText()));
+                //this.storageAlquileres.EditarAlquiler(index, this.alquiler); // Envía al objeto con su respectivo índice para editar
+                if (operacionAl.editarAlquiler(Enlace.crearEnlace(), alquiler)) {
+                    JOptionPane.showMessageDialog(this, "Alquiler editado");
+                    this.cambiarPestañaT();
+                    this.limpiarCampos();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Hubo un inconveniente al intentar editar el alquiler");
+
+                }
+            }
+
+        } catch (ArrayIndexOutOfBoundsException es) {
+
+            JOptionPane.showMessageDialog(this, "Por favor seleccione una vivienda y un inquilino.");
+            System.out.println(es.getCause());
+            es.printStackTrace();
+
+        } catch (NumberFormatException esc) {
+
+            System.out.println(esc.getMessage());
+            JOptionPane.showMessageDialog(this, "Ingrese correctamente los datos");
+
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgAlquileres.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Se llama para realizar una búsqueda
+     */
+    private void btnBuscar() {
+        //        this.ENCABEZADO_TABLA = new String[]{"Nombre", "Cédula", "Género", "E-mail", "Teléfono"};
+//        this.alquiler = new Alquileres();
+//        // Creamos el modelo restringiendo que se editen sus celdas.
+//        this.alquileresTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
+//            @Override
+//            public boolean isCellEditable(int rowIndex, int columnIndex) {
+//                return false;
+//            }
+//        };
+        try {
+            if (txtBuscar.getText().length() == 0) {
+                this.rellenarTblAlquileres();
+
+            } else {
+
+                //            for (byte i = 0; i < storageAlquileres.getTotal(); i++) {
+//
+//                this.alquiler = storageAlquileres.obtenerAlquiler(i);
+//                if (Integer.toString(alquiler.getIdVivienda()).regionMatches(true, 0, txtBuscar.getText(), 0, txtBuscar.getText().length())) {
+//
+//                    Object registro[] = {this.alquiler.getNumAlquiler(), this.alquiler.getFechContrato(), this.alquiler.getEstado(),
+//                        this.alquiler.getIdVivienda(), this.alquiler.getCedInquilino(), this.alquiler.getPrecioAlquiler(),
+//                        this.alquiler.getDepositoGarantia(), this.alquiler.getPorcIncremAnual() + "%"};
+//
+//                    this.alquileresTabla.addRow(registro);
+//
+//                }
+//            }
+                this.alquileresTabla = operacionAl.BuscarFiltrado(Enlace.crearEnlace(), "numAlquiler",
+                        txtBuscar.getText(), "TblAlquileres");
+                tblAlquileres.setModel(alquileresTabla);
+            }
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgAlquileres.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Se extrae la vivienda seleccionada despúes de abrir la ventana de las viviendas
+     */
+    private void selecIdVivienda() {
+        try {
+            DlgViviendas viviW = new DlgViviendas(null, true, this.storagePropietarios, storageViviendas, this.inVi);
+            viviW.setVisible(true);
+            this.inVi = viviW.getInVi();
+            txtIDVivienda.setText(Integer.toString(inVi));
+            System.out.println("ID de vivienda extraída: " + inVi);
+
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println(e.getCause());
+            JOptionPane.showMessageDialog(this, "No ha seleccionado niguna vivienda.");
+        }
+    }
 
     /**
      * Este método permite recuperar el índice del ID de la vivienda y la cédula del propietario
+     * Ya que esos datos son los que está enlazado, esto tal vez lo hace MySQL
      */
     private void recuperaIdCed() {
 
@@ -818,12 +904,12 @@ public class DlgAlquileres extends javax.swing.JDialog {
 
         if (rdbCancelado.isSelected()) {
             this.alquiler.setEstado(rdbCancelado.getText()); // Enviamos el alquiler con su estado de Cancelados
-            storageViviendas.obtenerVivienda(this.inVi).setEstado("Disponible"); // Si el alquiler fue cancelado, entonces la vivienda estará disponible
+            //storageViviendas.obtenerVivienda(this.inVi).setEstado("Disponible"); // Si el alquiler fue cancelado, entonces la vivienda estará disponible
 
         } else if (rdbVigente.isSelected()) {
 
             this.alquiler.setEstado(rdbVigente.getText()); // Enviamos el alquiler con su estado de vigente
-            storageViviendas.obtenerVivienda(this.inVi).setEstado("Alquilada"); // Si el alquiler fue cancelado, entonces la vivienda estará alquilada
+            //storageViviendas.obtenerVivienda(this.inVi).setEstado("Alquilada"); // Si el alquiler fue cancelado, entonces la vivienda estará alquilada
 
         }
     }
@@ -872,31 +958,36 @@ public class DlgAlquileres extends javax.swing.JDialog {
      */
     private void rellenarTblAlquileres() {
 
-//        storageAlquileres.verificaFecha();
+        try {
+            //        storageAlquileres.verificaFecha();
+//
+//        this.ENCABEZADO_TABLA = new String[]{"Num. Alquiler", "Fech. Contrato", "Estado", "ID. Vivienda", "Cédula Inquilino", "Precio Alquiler", "Dep. Garantía", "Porc. Aumento Anual"};
+//        this.alquiler = new Alquileres();
+//        
+//        this.alquileresTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
+//            @Override
+//            public boolean isCellEditable(int rowIndex, int columnIndex) {
+//                return false;
+//            }
+//        };
+//
+//        for (byte i = 0; i < storageAlquileres.getTotal(); i++) {
+//
+//            this.alquiler = storageAlquileres.obtenerAlquiler(i);
+//
+//            Object registro[] = {this.alquiler.getNumAlquiler(), this.alquiler.getFechContrato(), this.alquiler.getEstado(),
+//                this.alquiler.getIdVivienda(), this.alquiler.getCedInquilino(), this.alquiler.getPrecioAlquiler(),
+//                this.alquiler.getDepositoGarantia(), this.alquiler.getPorcIncremAnual() + "%"};
+//
+//            this.alquileresTabla.addRow(registro);
+//        }
+            this.alquileresTabla = operacionAl.TodoAlquileres(Enlace.crearEnlace(), "Alquileres");
+            this.tblAlquileres.setModel(this.alquileresTabla);
+            lblTotal.setText("Total de alquileres: " + tblAlquileres.getRowCount());
 
-        this.ENCABEZADO_TABLA = new String[]{"Num. Alquiler", "Fech. Contrato", "Estado", "ID. Vivienda", "Cédula Inquilino", "Precio Alquiler", "Dep. Garantía", "Porc. Aumento Anual"};
-        this.alquiler = new Alquileres();
-        
-        this.alquileresTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
-            @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return false;
-            }
-        };
-
-        for (byte i = 0; i < storageAlquileres.getTotal(); i++) {
-
-            this.alquiler = storageAlquileres.obtenerAlquiler(i);
-
-            Object registro[] = {this.alquiler.getNumAlquiler(), this.alquiler.getFechContrato(), this.alquiler.getEstado(),
-                this.alquiler.getIdVivienda(), this.alquiler.getCedInquilino(), this.alquiler.getPrecioAlquiler(),
-                this.alquiler.getDepositoGarantia(), this.alquiler.getPorcIncremAnual() + "%"};
-
-            this.alquileresTabla.addRow(registro);
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgAlquileres.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this.tblAlquileres.setModel(this.alquileresTabla);
-        lblTotal.setText("Total de alquileres: " + storageAlquileres.getTotal());
 
     }
-
 }

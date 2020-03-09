@@ -689,15 +689,9 @@ public class DlgViviendas extends javax.swing.JDialog {
     }//GEN-LAST:event_btnSeleccionarPropietarioActionPerformed
 
     private void tblViviendasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblViviendasMouseClicked
-        // Si el título de la pestaña dice "Selecciona" y la cantidad de clicks es de 2, entonces obtiene el índice y cierra la ventana
-        if (evt.getClickCount() == 2 && tbdViviendas.getTitleAt(0).equals("Seleccionar")) {
-            this.inVi = tblViviendas.getSelectedRow();
-            System.out.println("Se ha seleccionado el ID: " + storageViviendas.obtenerVivienda(inVi).getIdVivienda());
-            this.dispose();
-        }
-
+        this.enviaIdVivienda(evt);
     }//GEN-LAST:event_tblViviendasMouseClicked
-
+    
     private void btnInicioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInicioActionPerformed
         // Cerramos la ventana
         this.dispose();
@@ -723,20 +717,18 @@ public class DlgViviendas extends javax.swing.JDialog {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(DlgViviendas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(DlgViviendas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(DlgViviendas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(DlgViviendas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
+        
         //</editor-fold>
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 DlgViviendas dialog = new DlgViviendas(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -825,7 +817,7 @@ public class DlgViviendas extends javax.swing.JDialog {
 
             // Obtenemos los datos de la vivienda seleccionada
             //this.vivienda = this.storageViviendas.obtenerVivienda(index);
-            // Recolectamos los datos de la tabla
+            
             txtIdVivienda.setText(String.valueOf(vivienda.getIdVivienda()));
             txtCanBanios.setText(String.valueOf(vivienda.getCantBanios()));
             txtCantHabitaciones.setText(String.valueOf(vivienda.getCantHabitac()));
@@ -1042,14 +1034,9 @@ public class DlgViviendas extends javax.swing.JDialog {
             txtPrecioBase.setBorder(new LineBorder(Color.RED));
         }
 
-        if ((cmbTipoConstruccion.getSelectedIndex() != 0) && !txtCanBanios.getText().isEmpty() && !txtCantHabitaciones.getText().isEmpty() && !txtDepGarantia.getText().isEmpty()
+        return (cmbTipoConstruccion.getSelectedIndex() != 0) && !txtCanBanios.getText().isEmpty() && !txtCantHabitaciones.getText().isEmpty() && !txtDepGarantia.getText().isEmpty()
                 && !txtDescripcion.getText().isEmpty() && !txtMtsConstruccion.getText().isEmpty() && !txtMtsLote.getText().isEmpty()
-                && !txtPrecioBase.getText().isEmpty() && !this.obtenerCarretera().isEmpty() && this.seleCochera) {
-
-            return true;
-        } else {
-            return false;
-        }
+                && !txtPrecioBase.getText().isEmpty() && !this.obtenerCarretera().isEmpty() && this.seleCochera;
     }
 
     /**
@@ -1072,6 +1059,21 @@ public class DlgViviendas extends javax.swing.JDialog {
         }
     }
 
+    /**
+     * Envía la vivienda a la ventana de los alquileres
+     * @param evt 
+     */
+    private void enviaIdVivienda(java.awt.event.MouseEvent evt){
+        if (evt.getClickCount() == 2 && tbdViviendas.getTitleAt(0).equals("Seleccionar")) {
+            
+            this.inVi = tblViviendas.getSelectedRow();
+            inVi = Integer.parseInt(tblViviendas.getValueAt(inVi, 0).toString());
+            
+            System.out.println("Se ha seleccionado el ID: " + inVi);
+            this.dispose();
+        }
+    }
+    
     /**
      * Método que retorna el valor de la cochera
      */

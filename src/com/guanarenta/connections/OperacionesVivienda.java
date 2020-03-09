@@ -159,7 +159,7 @@ public class OperacionesVivienda implements OperacionesPrincipales {
 
         try {
             ArrayList<Vivienda> array = this.MostrarDatos(conectar, tabla);
-            String[] titulos = {"ID Vivienda", "Propietario", "Precio Base", "Dep. Garantía", "Estado", "Cochera",
+            String[] titulos = {"ID", "Propietario", "Precio Base", "Dep. Garantía", "Estado", "Cochera",
                 "Tamaño Vivienda", "Direccion"};
             modelo.setColumnIdentifiers(titulos);
 

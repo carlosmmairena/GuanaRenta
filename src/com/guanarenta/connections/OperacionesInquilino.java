@@ -83,13 +83,13 @@ public class OperacionesInquilino implements OperacionesPrincipales {
         try {
             ArrayList<Inquilino> array = this.MostrarDatos(conectar, tabla);
             String[] titulos = {"Nombre", "Cédula", "Género", "E-mail", "Teléfono",
-                "Ocupación", "Fecha Nacimiento"};
+                "Ocupación", "Fecha Nacimiento","Dirección"};
             modelo.setColumnIdentifiers(titulos);
 
             for (Inquilino inqui : array) {
 
                 Object registro[] = {inqui.getNomInqui(), inqui.getCedInqui(), inqui.getGenero(), inqui.getEmail(),
-                    inqui.getTelefono(), inqui.getOcupacion(), inqui.getFechNac()};
+                    inqui.getTelefono(), inqui.getOcupacion(), inqui.getFechNac(),inqui.getDireccion()};
 
                 modelo.addRow(registro);
             }
@@ -111,9 +111,9 @@ public class OperacionesInquilino implements OperacionesPrincipales {
             ps.setString(3, String.valueOf(inquilino.getGenero()));
             ps.setDate(4, (Date) inquilino.getFechNac());
             ps.setString(5, inquilino.getDireccion());
-            ps.setInt(5, inquilino.getTelefono());
-            ps.setString(6, inquilino.getEmail());
-            ps.setString(7, inquilino.getOcupacion());
+            ps.setInt(6, inquilino.getTelefono());
+            ps.setString(7, inquilino.getEmail());
+            ps.setString(8, inquilino.getOcupacion());
 
             ps.executeUpdate();
             return true;
@@ -141,9 +141,9 @@ public class OperacionesInquilino implements OperacionesPrincipales {
             ps.setString(3, String.valueOf(inquilino.getGenero()));
             ps.setDate(4, (Date) inquilino.getFechNac());
             ps.setString(5, inquilino.getDireccion());
-            ps.setInt(5, inquilino.getTelefono());
-            ps.setString(6, inquilino.getEmail());
-            ps.setString(7, inquilino.getOcupacion());
+            ps.setInt(6, inquilino.getTelefono());
+            ps.setString(7, inquilino.getEmail());
+            ps.setString(8, inquilino.getOcupacion());
             
             ps.executeUpdate();
             return true;
@@ -162,7 +162,7 @@ public class OperacionesInquilino implements OperacionesPrincipales {
      * @return
      * @throws SQLException
      */
-    public boolean eliminarInquilino(Connection conexion, int cedInqui) throws SQLException {
+    public boolean eliminarInquilino(Connection conexion, long cedInqui) throws SQLException {
         try {
             CallableStatement ps = conexion.prepareCall("{CALL stpEliminarInquilino(?)}");
             ps.setLong(1, cedInqui);
@@ -231,13 +231,13 @@ public class OperacionesInquilino implements OperacionesPrincipales {
             // Recibimos el ArrayList ya con los datos cargado
             ArrayList<Inquilino> array = this.FiltroBD(conectar, campo, datoP, tabla);
             String[] titulos = {"Nombre", "Cédula", "Género", "E-mail", "Teléfono",
-                "Ocupación", "Fecha Nacimiento"};
+                "Ocupación", "Fech. Nac","Dirección"};
             modelo.setColumnIdentifiers(titulos);
 
             // Agregamos todos los datos al modelo de la tabla y la retornamos
             for (Inquilino inqui : array) {
                 Object registro[] = {inqui.getNomInqui(), inqui.getCedInqui(), inqui.getGenero(), inqui.getEmail(),
-                    inqui.getTelefono(), inqui.getOcupacion(), inqui.getFechNac()};
+                    inqui.getTelefono(), inqui.getOcupacion(), inqui.getFechNac(),inqui.getDireccion()};
 
                 modelo.addRow(registro);
             }

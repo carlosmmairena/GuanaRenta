@@ -18,14 +18,14 @@ public class Alquileres {
     private byte canMeses;
     private byte numAdultos;
     private byte numNinos;
-    private int depositoGarantia;
-    private int precioAlquiler;
+    private double depositoGarantia;
+    private double precioAlquiler;
     private byte porcIncremAnual;
     private long cedInquilino;
     private int idVivienda;
     private String estado;
 
-    public Alquileres(int numAlquiler, Date fechContrato, byte cantMeses, byte numAdultos, byte numNinos, int depositoGarantia, int precioAlquiler, byte porcIncremAnual, long cedInquilino, int idVivienda, String estado) {
+    public Alquileres(int numAlquiler, Date fechContrato, byte cantMeses, byte numAdultos, byte numNinos, double depositoGarantia, double precioAlquiler, byte porcIncremAnual, long cedInquilino, int idVivienda, String estado) {
         this.numAlquiler = numAlquiler;
         this.fechContrato = fechContrato;
         this.canMeses = cantMeses;
@@ -43,8 +43,8 @@ public class Alquileres {
         this.numAlquiler = 100;
         this.fechContrato = Date.from(Instant.now());
         this.canMeses = 1;
-        this.numAdultos = 2;
-        this.numNinos = 2;
+        this.numAdultos = 1;
+        this.numNinos = 1;
         this.depositoGarantia = 0;
         this.precioAlquiler = 0;
         this.porcIncremAnual = 0;
@@ -93,19 +93,19 @@ public class Alquileres {
         this.numNinos = numNinos;
     }
 
-    public int getDepositoGarantia() {
+    public double getDepositoGarantia() {
         return depositoGarantia;
     }
 
-    public void setDepositoGarantia(int depositoGarantia) {
+    public void setDepositoGarantia(double depositoGarantia) {
         this.depositoGarantia = depositoGarantia;
     }
 
-    public int getPrecioAlquiler() {
+    public double getPrecioAlquiler() {
         return precioAlquiler;
     }
 
-    public void setPrecioAlquiler(int precioAlquiler) {
+    public void setPrecioAlquiler(double precioAlquiler) {
         this.precioAlquiler = precioAlquiler;
     }
 
@@ -140,5 +140,4 @@ public class Alquileres {
     public void setEstado(String estado) {
         this.estado = estado;
     }
-
 }

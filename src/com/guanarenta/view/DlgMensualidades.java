@@ -617,11 +617,11 @@ public class DlgMensualidades extends javax.swing.JDialog {
      * Método que hace el cálculo del monto y descuento en la temporada baja
      */
     private void tempBaja(int i) {
-        float monto = storageAlquileres.obtenerAlquiler(i).getPrecioAlquiler();
+        double monto = storageAlquileres.obtenerAlquiler(i).getPrecioAlquiler();
         float descuento = (float) 0.1;
 
         monto = (float) (monto - (descuento * monto));
-        this.mensualidad.setMontoMes(monto); // Aquí irá el monto del mes
+        this.mensualidad.setMontoMes((float) monto); // Aquí irá el monto del mes
         this.mensualidad.setDescuento((int) (descuento * 100)); // Aquí obtenemos el descuento aplicado dependiendo de la temporada
         System.out.println("Descuento de: " + (descuento * 100));
         System.out.println("Total del monto a pagar: " + monto);
@@ -631,11 +631,11 @@ public class DlgMensualidades extends javax.swing.JDialog {
      * Método que hace el cálculo del monto y descuento en la temporada media
      */
     private void tempMedia(int i) {
-        float monto = storageAlquileres.obtenerAlquiler(i).getPrecioAlquiler();
-        float descuento = (float) 0.05;
+        double monto = storageAlquileres.obtenerAlquiler(i).getPrecioAlquiler();
+        double descuento = (float) 0.05;
 
-        monto = (float) (monto - (descuento * monto));
-        this.mensualidad.setMontoMes(monto); // Aquí irá el monto del mes
+        monto = (monto - (descuento * monto));
+        this.mensualidad.setMontoMes((float) monto); // Aquí irá el monto del mes
         this.mensualidad.setDescuento((int) (descuento * 100)); // Aquí obtenemos el descuento aplicado dependiendo de la temporada
         System.out.println("Descuento de: " + (descuento * 100));
         System.out.println("Total del monto a pagar: " + monto);
@@ -645,10 +645,10 @@ public class DlgMensualidades extends javax.swing.JDialog {
      * Método que hace el cálculo del monto y descuento en la temporada alta
      */
     private void tempAlta(int i) {
-        float monto = storageAlquileres.obtenerAlquiler(i).getPrecioAlquiler();
+        double monto = storageAlquileres.obtenerAlquiler(i).getPrecioAlquiler();
         float descuento = 0;
 
-        this.mensualidad.setMontoMes(monto); // Aquí irá el monto del mes
+        this.mensualidad.setMontoMes((float) monto); // Aquí irá el monto del mes
         this.mensualidad.setDescuento((int) (descuento * 100)); // Aquí obtenemos el descuento aplicado dependiendo de la temporada
         System.out.println("No aplica descuento en la temporada alta");
         System.out.println("Total del monto a pagar: " + monto);

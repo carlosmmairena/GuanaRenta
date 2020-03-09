@@ -336,7 +336,7 @@ $email VARCHAR(35),
 $ocupacion VARCHAR(40))
 
 BEGIN
-	IF EXISTS (SELECT cdInqui FROM TblInquilino WHERE cedInqui = $cedInqui) THEN
+	IF EXISTS (SELECT cedInqui FROM TblInquilino WHERE cedInqui = $cedInqui) THEN
 		
         UPDATE TblInquilino SET
 				nomInqui = $nomInqui,
@@ -371,17 +371,17 @@ END $$
 DELIMITER ;
 
 
--- ALQUILERES --------------------
+-- ALQUILERES -------------------- Aquí se deben modificar el estado de la vivienda alquilada
 -- Insertamos un alquiler
 DELIMITER $$
 CREATE DEFINER = 'root'@'localhost' PROCEDURE stpGuardarAlquiler
-($numAlquiler INT,
+(-- $numAlquiler INT,
 $fechContrato DATE,
 $cantMeses INT,
 $numAdultos INT,
 $numNinos INT,
-$deposGarantia DECIMAL(7,2),
-$precioAlquiler DECIMAL(7,2),
+$deposGarantia DOUBLE,
+$precioAlquiler DOUBLE,
 $porcIncremAnual INT,
 $cedInqui INT,
 $idVivienda INT,
@@ -392,7 +392,11 @@ BEGIN
     INSERT INTO TblAlquileres (fechContrato, cantMeses, numAdultos, numNinos, deposGarantia,
 								precioAlquiler, porcIncremAnual, cedInqui, idVivienda, estado)
 		VALUES ($fechContrato,$cantMeses,$numAdultos,$numNinos,$deposGarantia,
-				$precioAlquiler,$porcIncremAnual,$idVivienda,$estado);
+				$precioAlquiler,$porcIncremAnual,$cedInqui,$idVivienda,$estado);
+    
+    -- A ver si funciona
+    CALL `BD_GuanaRenta`.`stpEditarEstadoVivienda`($idVivienda,'Alquilada');
+    
     
 END$$
 DELIMITER ;
@@ -405,8 +409,8 @@ $fechContrato DATE,
 $cantMeses INT,
 $numAdultos INT,
 $numNinos INT,
-$deposGarantia DECIMAL(7,2),
-$precioAlquiler DECIMAL(7,2),
+$deposGarantia DOUBLE,
+$precioAlquiler DOUBLE,
 $porcIncremAnual INT,
 $cedInqui INT,
 $idVivienda INT,
@@ -452,7 +456,7 @@ BEGIN
 END$$
 DELIMITER ;
 
--- Modificar el estado del alquiler
+-- Modificar el estado del alquiler, tal vez no hace falta, no se está usando
 DELIMITER $$
 CREATE DEFINER = 'root'@'localhost' PROCEDURE stpEditarEstadoAlquiler
 ($numAlquier INT,
@@ -510,6 +514,7 @@ BEGIN
 END $$
 DELIMITER ;
 
+
 -- Creacion de una vista
 CREATE VIEW VTblViviendas
 	as
@@ -523,16 +528,15 @@ CREATE VIEW VTblViviendas
 DELIMITER $$
 CREATE  PROCEDURE stpMostrarDatos(
 $Tabla VARCHAR(20))
-BEGIN
-	
+BEGIN	
     CASE $Tabla
-				WHEN 'Propietarios'  THEN SELECT * FROM TblPropietario;
-                WHEN 'Viviendas'     THEN SELECT * FROM VTblViviendas;
-                -- WHEN 'Viviendas'     THEN SELECT * FROM TblVivienda;
-                WHEN 'Inquilinos'    THEN SELECT * FROM TblInquilino;
-                WHEN 'Alquileres'    THEN SELECT * FROM TblAlquileres;
-                WHEN 'Mensualidades' THEN SELECT * FROM TblMensualidades;
-    END CASE;    
+			   WHEN 'Propietarios'  THEN SELECT * FROM TblPropietario;
+               -- WHEN 'Viviendas'     THEN SELECT * FROM VTblViviendas;
+               WHEN 'Viviendas'     THEN SELECT * FROM TblVivienda;
+               WHEN 'Inquilinos'    THEN SELECT * FROM TblInquilino;
+               WHEN 'Alquileres'    THEN SELECT * FROM TblAlquileres; -- en teoria estas 2 ultimas dan error
+               WHEN 'Mensualidades' THEN SELECT * FROM TblMensualidades;
+    END CASE;
 END$$
 DELIMITER ;
 
