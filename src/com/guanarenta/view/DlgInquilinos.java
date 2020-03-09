@@ -4,11 +4,16 @@
 package com.guanarenta.view;
 
 import com.guanarenta.clases.Inquilino;
+import com.guanarenta.connections.Enlace;
+import com.guanarenta.connections.OperacionesInquilino;
 import com.guanarenta.storage.StorageInquilinos;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
@@ -27,6 +32,8 @@ public class DlgInquilinos extends javax.swing.JDialog {
     DefaultTableModel inquilinosTabla;
     private int inQui;
 
+    OperacionesInquilino operacionI;
+
     /**
      * Creates new form DlgInquilinos
      *
@@ -36,6 +43,8 @@ public class DlgInquilinos extends javax.swing.JDialog {
     public DlgInquilinos(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        this.operacionI = new OperacionesInquilino();
+
         this.storageInquilinos = new StorageInquilinos();
         this.inquilino = null;
         this.inquilinosTabla = null;
@@ -52,6 +61,8 @@ public class DlgInquilinos extends javax.swing.JDialog {
     public DlgInquilinos(java.awt.Frame parent, boolean modal, StorageInquilinos storageInquilinos) {
         super(parent, modal);
         initComponents();
+        this.operacionI = new OperacionesInquilino();
+
         this.storageInquilinos = storageInquilinos;
         this.inquilino = null;
         this.inquilinosTabla = null;
@@ -69,6 +80,8 @@ public class DlgInquilinos extends javax.swing.JDialog {
     public DlgInquilinos(java.awt.Frame parent, boolean modal, StorageInquilinos storageInquilinos, int inQui) {
         super(parent, modal);
         initComponents();
+        this.operacionI = new OperacionesInquilino();
+
         this.storageInquilinos = storageInquilinos;
         this.inquilino = null;
         this.inquilinosTabla = null;
@@ -102,7 +115,6 @@ public class DlgInquilinos extends javax.swing.JDialog {
         pnlInquilino = new javax.swing.JPanel();
         txtEmail = new javax.swing.JTextField();
         lblEmail = new javax.swing.JLabel();
-        txtTelefono = new javax.swing.JFormattedTextField();
         lblTelefono = new javax.swing.JLabel();
         rdbM = new javax.swing.JRadioButton();
         rdbF = new javax.swing.JRadioButton();
@@ -120,6 +132,7 @@ public class DlgInquilinos extends javax.swing.JDialog {
         btnCancelar = new javax.swing.JButton();
         btnLimpiarCampos = new javax.swing.JButton();
         dtpFechNaci = new com.toedter.calendar.JDateChooser();
+        txtTelefono = new javax.swing.JTextField();
 
         jToolBar1.setRollover(true);
 
@@ -143,7 +156,7 @@ public class DlgInquilinos extends javax.swing.JDialog {
             }
         ));
         tblInquilinos.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
-        tblInquilinos.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        tblInquilinos.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         tblInquilinos.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tblInquilinosMouseClicked(evt);
@@ -271,14 +284,6 @@ public class DlgInquilinos extends javax.swing.JDialog {
         lblEmail.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         lblEmail.setText("E-mail");
 
-        try {
-            txtTelefono.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("+506-####-####")));
-        } catch (java.text.ParseException ex) {
-            ex.printStackTrace();
-        }
-        txtTelefono.setText("+506  -    -    ");
-        txtTelefono.setDropMode(javax.swing.DropMode.INSERT);
-
         lblTelefono.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         lblTelefono.setText("Teléfono");
 
@@ -342,6 +347,12 @@ public class DlgInquilinos extends javax.swing.JDialog {
             }
         });
 
+        txtTelefono.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtTelefonoKeyTyped(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnlInquilinoLayout = new javax.swing.GroupLayout(pnlInquilino);
         pnlInquilino.setLayout(pnlInquilinoLayout);
         pnlInquilinoLayout.setHorizontalGroup(
@@ -357,13 +368,13 @@ public class DlgInquilinos extends javax.swing.JDialog {
                             .addComponent(lblCedula, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addGroup(pnlInquilinoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtCedula, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(pnlInquilinoLayout.createSequentialGroup()
                                 .addComponent(rdbF)
                                 .addGap(18, 18, 18)
-                                .addComponent(rdbM, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(rdbM, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(pnlInquilinoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(pnlInquilinoLayout.createSequentialGroup()
                                 .addGap(18, 18, 18)
@@ -427,8 +438,8 @@ public class DlgInquilinos extends javax.swing.JDialog {
                 .addGroup(pnlInquilinoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnlInquilinoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(lblTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(txtTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(lblFechNacimiento, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(lblFechNacimiento, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtTelefono))
                     .addComponent(dtpFechNaci, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 121, Short.MAX_VALUE)
                 .addGroup(pnlInquilinoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -487,62 +498,7 @@ public class DlgInquilinos extends javax.swing.JDialog {
     }//GEN-LAST:event_formWindowOpened
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
-        // Al momento de que seleccionan al botón de enviar
-        // Método para verificar que cambia de color el borde del campo que este vacio
-        CambioColorBordes();
-        // falta validar de que ingresen correctamente los datos
-
-        if (verificarDatos()) { // Si los campos no están vacíos
-            try {
-
-                this.inquilino = new Inquilino();
-                long fechObt = dtpFechNaci.getDate().getTime();
-
-                // Obtenemos los datos
-                this.inquilino.setNomInqui(txtNombre.getText());
-                this.inquilino.setDireccion(txtDireccion.getText());
-                this.inquilino.setEmail(txtEmail.getText());
-                this.inquilino.setOcupacion(txtOcupacion.getText());
-                this.inquilino.setTelefono(txtTelefono.getText());
-
-                this.inquilino.setFechNac(new java.sql.Date(fechObt)); // Obtenemos la fecha
-                this.inquilino.setGenero(this.obtenerGenero());
-
-                if (tbdInquilinos.getTitleAt(1).equals("Añadir")) { // Si el título dice Añadir
-
-                    // Comprobamos de que la cédula que ingresaron sea diferente con las que ya están registradas
-                    if (storageInquilinos.comprobarCedula(Long.parseLong(txtCedula.getText()))) {
-
-                        this.inquilino.setCedInqui(Long.parseLong(txtCedula.getText()));
-                        this.storageInquilinos.guardaInquilino(inquilino);
-
-                    } else {
-                        // Si la cédula está ya registrada
-                        JOptionPane.showMessageDialog(this, "Esta cédula ya fue registrada");
-                        txtCedula.setText("");
-                    }
-
-                } else { // Si el título no dice añadir, entonces es para editar
-                    // DEBERÍAMOS COMPROBAR DE QUE LA CÉDULA NO APAREZCA MÁS DE 1 VEZ, YA QUE LA 1RA VEZ ES CUANDO YA SE REGISTRÓ
-
-                    this.inquilino.setCedInqui(Long.parseLong(txtCedula.getText()));
-                    int index = tblInquilinos.getSelectedRow();
-                    this.storageInquilinos.editarInquilino(index, this.inquilino);
-
-                }
-
-                this.limpiarCampos();
-                this.rellenarTabla();
-                this.cambiarPestañaTa();
-
-            } catch (NumberFormatException es) { // En caso de que el usuario ha digitado mal los tipos de datos
-                JOptionPane.showMessageDialog(this, "Por favor ingrese correctamente los datos.");
-                System.out.println(es.getCause());
-            }
-        } else { // En caso de que algún campo esté en blanco
-            JOptionPane.showMessageDialog(this, "Por favor rellene todos los campos");
-        }
-
+        this.btnGuarda();
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
@@ -572,7 +528,7 @@ public class DlgInquilinos extends javax.swing.JDialog {
             txtNombre.setText(this.inquilino.getNomInqui());
             txtCedula.setText(Long.toString(this.inquilino.getCedInqui()));
             txtEmail.setText(inquilino.getEmail());
-            txtTelefono.setText(inquilino.getTelefono());
+            txtTelefono.setText(String.valueOf(inquilino.getTelefono()));
             txtDireccion.setText(this.inquilino.getDireccion());
             txtOcupacion.setText(this.inquilino.getOcupacion());
 
@@ -653,6 +609,10 @@ public class DlgInquilinos extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_txtBuscarKeyTyped
 
+    private void txtTelefonoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtTelefonoKeyTyped
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtTelefonoKeyTyped
+
     /**
      * @param args the command line arguments
      */
@@ -730,10 +690,75 @@ public class DlgInquilinos extends javax.swing.JDialog {
     private javax.swing.JTextField txtEmail;
     private javax.swing.JTextField txtNombre;
     private javax.swing.JTextField txtOcupacion;
-    private javax.swing.JFormattedTextField txtTelefono;
+    private javax.swing.JTextField txtTelefono;
     // End of variables declaration//GEN-END:variables
 
-    
+    /**
+     * Se llama al pulsar el botón guardar
+     */
+    private void btnGuarda() {
+        // Método para verificar que cambia de color el borde del campo que este vacio
+        //CambioColorBordes();
+        // falta validar de que ingresen correctamente los datos
+
+        if (verificarDatos()) { // Si los campos no están vacíos
+            try {
+
+                this.inquilino = new Inquilino();
+                long fechObt = dtpFechNaci.getDate().getTime(); // del selector de fecha
+
+                // Obtenemos los datos
+                this.inquilino.setNomInqui(txtNombre.getText());
+                this.inquilino.setDireccion(txtDireccion.getText());
+                this.inquilino.setEmail(txtEmail.getText());
+                this.inquilino.setOcupacion(txtOcupacion.getText());
+                this.inquilino.setTelefono(Integer.parseInt(txtTelefono.getText()));
+                this.inquilino.setCedInqui(Long.parseLong(txtCedula.getText()));
+                this.inquilino.setFechNac(new java.sql.Date(fechObt)); // Obtenemos la fecha
+                this.inquilino.setGenero(this.obtenerGenero());
+
+                if (tbdInquilinos.getTitleAt(1).equals("Añadir")) { // Si el título dice Añadir
+
+                    if (operacionI.ExisteUsuario(Enlace.crearEnlace(), inquilino.getCedInqui(), "Inquilino") > 0) {
+
+                        //this.inquilino.setCedInqui(Long.parseLong(txtCedula.getText()));
+                        //this.storageInquilinos.guardaInquilino(inquilino);
+                        if (operacionI.guardarInquilino(Enlace.crearEnlace(), inquilino)) {
+                            JOptionPane.showMessageDialog(this, "Inquilino guardado");
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Hubo inconvenientes para guardar el inquilino");
+                        }
+
+                    } else {
+                        // Si la cédula está ya registrada
+                        JOptionPane.showMessageDialog(this, "Esta cédula ya fue registrada");
+                        txtCedula.setText("");
+                    }
+
+                } else { // Si el título no dice añadir, entonces es para editar
+                    // DEBERÍAMOS COMPROBAR DE QUE LA CÉDULA NO APAREZCA MÁS DE 1 VEZ, YA QUE LA 1RA VEZ ES CUANDO YA SE REGISTRÓ
+
+                    this.inquilino.setCedInqui(Long.parseLong(txtCedula.getText()));
+                    int index = tblInquilinos.getSelectedRow();
+                    //this.storageInquilinos.editarInquilino(index, this.inquilino);
+
+                }
+
+                this.limpiarCampos();
+                this.rellenarTabla();
+                this.cambiarPestañaTa();
+
+            } catch (NumberFormatException es) { // En caso de que el usuario ha digitado mal los tipos de datos
+                JOptionPane.showMessageDialog(this, "Por favor ingrese correctamente los datos.");
+                System.out.println(es.getCause());
+            } catch (SQLException | ClassNotFoundException ex) {
+                Logger.getLogger(DlgInquilinos.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else { // En caso de que algún campo esté en blanco
+            JOptionPane.showMessageDialog(this, "Por favor rellene todos los campos");
+        }
+    }
+
     /**
      * Método para comprobar si se ha ingresado todos los datos
      */
@@ -801,27 +826,32 @@ public class DlgInquilinos extends javax.swing.JDialog {
      */
     private void rellenarTabla() {
 
-        this.ENCABEZADO_TABLA = new String[]{"Nombre", "Cédula", "Género", "E-mail", "Teléfono", "Ocupación", "Fecha Nacimiento"};
-        this.inquilino = new Inquilino();
-        this.inquilinosTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
-            @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return false;
-            }
-        };
+        try {
+            //        this.ENCABEZADO_TABLA = new String[]{"Nombre", "Cédula", "Género", "E-mail", "Teléfono", "Ocupación", "Fecha Nacimiento"};
+//        this.inquilino = new Inquilino();
+//        this.inquilinosTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
+//            @Override
+//            public boolean isCellEditable(int rowIndex, int columnIndex) {
+//                return false;
+//            }
+//        };
 
-        for (byte i = 0; i < storageInquilinos.getTotal(); i++) {
+//        for (byte i = 0; i < storageInquilinos.getTotal(); i++) {
+//
+//            this.inquilino = storageInquilinos.obtenerInquilino(i);
+//            Object registro[] = {this.inquilino.getNomInqui(), this.inquilino.getCedInqui(), this.inquilino.getGenero(),
+//                this.inquilino.getEmail(), this.inquilino.getTelefono(), this.inquilino.getOcupacion(), this.inquilino.getFechNac()};
+//
+//            this.inquilinosTabla.addRow(registro);
+//
+//        }
+            this.inquilinosTabla = operacionI.TodoInquilinos(Enlace.crearEnlace(), "Inquilinos");
+            this.tblInquilinos.setModel(this.inquilinosTabla);
+            lblTotal.setText("Total de inquilinos registrados: " + tblInquilinos.getRowCount());
 
-            this.inquilino = storageInquilinos.obtenerInquilino(i);
-            Object registro[] = {this.inquilino.getNomInqui(), this.inquilino.getCedInqui(), this.inquilino.getGenero(),
-                this.inquilino.getEmail(), this.inquilino.getTelefono(), this.inquilino.getOcupacion(), this.inquilino.getFechNac()};
-
-            this.inquilinosTabla.addRow(registro);
-
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgInquilinos.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        this.tblInquilinos.setModel(this.inquilinosTabla);
-        lblTotal.setText("Total de inquilinos registrados: " + storageInquilinos.getTotal());
 
     }
 
@@ -830,7 +860,7 @@ public class DlgInquilinos extends javax.swing.JDialog {
      *
      */
     public void CambioColorBordes() {
-        
+
         if (txtCedula.getText().isEmpty()) {
             txtCedula.setBorder(new LineBorder(Color.RED));
         }
@@ -851,8 +881,7 @@ public class DlgInquilinos extends javax.swing.JDialog {
         }
 
     }
-    
-    
+
     public int getInQui() {
         return inQui;
     }

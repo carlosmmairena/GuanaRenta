@@ -1,16 +1,13 @@
-
+/**
+ * En esta interfaz van todos lo métodos principales
+ */
 package com.guanarenta.connections;
 
-import com.guanarenta.clases.Propietario;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
 
-/**
- *
- * @author Carlos Mairena
- */
 public interface OperacionesPrincipales { 
    
     /**
@@ -20,7 +17,7 @@ public interface OperacionesPrincipales {
      * @return
      * @throws SQLException 
      */
-    public abstract ArrayList<Propietario> MostrarDatos(Connection conexion, String tabla) throws SQLException;
+//    public abstract ArrayList<Propietario> MostrarDatos(Connection conexion, String tabla) throws SQLException;
     
     /**
      * Abstracto que busca si existe el usuario ingresado
@@ -30,7 +27,7 @@ public interface OperacionesPrincipales {
      * @return
      * @throws SQLException 
      */
-    public abstract int ExisteUsuario(Connection enlace, int IdUsuario, String tipoUsuario) throws SQLException;
+//    public abstract int ExisteUsuario(Connection enlace, int IdUsuario, String tipoUsuario) throws SQLException;
     
     /**
      *  Abstracto que obtiene datos desde la BD y los agrega en un ArrayList
@@ -41,10 +38,10 @@ public interface OperacionesPrincipales {
      * @return
      * @throws SQLException 
      */
-    public abstract ArrayList<Propietario> FiltroBD(Connection conexion, String campo, String datoP, String tabla) throws SQLException;
+//    public abstract ArrayList<Object> FiltroBD(Connection conexion, String campo, String datoP, String tabla) throws SQLException;
     
     /**
-     * Retorna un Modelo con los datos ya cargados
+     * Retorna un modelo cargado de registros que coinciden con el datoP recibido en el campo
      * @param conectar
      * @param campo
      * @param datoP

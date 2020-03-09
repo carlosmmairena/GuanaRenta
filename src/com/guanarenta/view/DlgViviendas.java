@@ -4,10 +4,16 @@
 package com.guanarenta.view;
 
 import com.guanarenta.clases.Vivienda;
+import com.guanarenta.connections.Enlace;
+import com.guanarenta.connections.OperacionesVivienda;
 import com.guanarenta.storage.StoragePropietarios;
 import com.guanarenta.storage.StorageViviendas;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
@@ -21,6 +27,8 @@ public class DlgViviendas extends javax.swing.JDialog {
 
     StoragePropietarios storagePropietarios;
     StorageViviendas storageViviendas;
+
+    OperacionesVivienda operacionV;
 
     Vivienda vivienda;
     private boolean seleCochera;
@@ -38,6 +46,8 @@ public class DlgViviendas extends javax.swing.JDialog {
     public DlgViviendas(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        operacionV = new OperacionesVivienda();
+
         this.storagePropietarios = new StoragePropietarios();
         this.storageViviendas = new StorageViviendas();
         this.vivienda = null;
@@ -55,6 +65,8 @@ public class DlgViviendas extends javax.swing.JDialog {
     public DlgViviendas(java.awt.Frame parent, boolean modal, StoragePropietarios storagePropietarios, StorageViviendas storageViviendas) {
         super(parent, modal);
         initComponents();
+        operacionV = new OperacionesVivienda();
+
         this.storagePropietarios = storagePropietarios;
         this.storageViviendas = storageViviendas;
         this.vivienda = null;
@@ -76,6 +88,8 @@ public class DlgViviendas extends javax.swing.JDialog {
     public DlgViviendas(java.awt.Frame parent, boolean modal, StoragePropietarios storagePropietarios, StorageViviendas storageViviendas, int inVi) {
         super(parent, modal);
         initComponents();
+        operacionV = new OperacionesVivienda();
+
         this.storagePropietarios = storagePropietarios;
         this.storageViviendas = storageViviendas;
         this.vivienda = null;
@@ -174,7 +188,7 @@ public class DlgViviendas extends javax.swing.JDialog {
             }
         ));
         tblViviendas.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
-        tblViviendas.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        tblViviendas.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         tblViviendas.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         tblViviendas.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -565,55 +579,7 @@ public class DlgViviendas extends javax.swing.JDialog {
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         // Botón que agrega los datos que se ingresaron en la ventana
-
-        if (this.verificarDatos()) {
-
-            try {
-                this.vivienda = new Vivienda();
-
-                vivienda.setCantBanios(Float.parseFloat(txtCanBanios.getText()));
-                vivienda.setCantHabitac(Short.parseShort(txtCantHabitaciones.getText()));
-                vivienda.setCarretera(this.obtenerCarretera());
-                vivienda.setCochera(this.tieneCochera());
-                vivienda.setDepositoGarantia(Integer.parseInt(txtDepGarantia.getText()));
-                vivienda.setDescripcion(txtDescripcion.getText());
-                vivienda.setDireccion(txtDireccion.getText());
-                vivienda.setMtsConstruccion(Float.parseFloat(txtMtsConstruccion.getText()));
-                vivienda.setMtsLote(Float.parseFloat(txtMtsLote.getText()));
-                vivienda.setPrecioBase(Integer.parseInt(txtPrecioBase.getText()));
-                vivienda.setTipoConstruccion(this.obtenerTipoConstruccion());
-
-                // Reemplazamos por la tabla ya lista de propietarios
-                vivienda.setPropietario(this.storagePropietarios.obtenerPropietario(this.inPro));
-                if (tbdViviendas.getTitleAt(1).equals("Añadir")) {
-                    vivienda.setIdVivienda(storageViviendas.crearIdVivienda());
-                    // Si el título dice añadir, entonces guardamos a la vivienda
-                    if (!storageViviendas.guardaVivienda(vivienda)) {
-                        JOptionPane.showMessageDialog(this, "No se ha podido guardar el usuario");
-                    }
-                } else {
-                    // Si la pestaña tiene el título de editar
-                    vivienda.setIdVivienda(Integer.parseInt(txtIdVivienda.getText()));
-                    int index = tblViviendas.getSelectedRow();
-                    storageViviendas.editarVivienda(index, vivienda);
-                }
-
-                this.rellenarTabla();
-                this.cambiarPestañaT();
-                this.limpiarCampos();
-
-            } catch (NumberFormatException esc) {
-
-                System.out.println(esc.getMessage());
-                JOptionPane.showMessageDialog(this, "Ingrese correctamente los datos");
-
-            } catch (ArrayIndexOutOfBoundsException e) {
-                System.out.println(e.getMessage());
-                JOptionPane.showMessageDialog(this, "Seleccione un propietario");
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Asegúrese de rellenar todos los campos y seleccionar todas las opciones...");
-        }
+        this.btnGuarda();
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void txtCantHabitacionesKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtCantHabitacionesKeyTyped
@@ -676,54 +642,35 @@ public class DlgViviendas extends javax.swing.JDialog {
     }//GEN-LAST:event_btnNuevoActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
-        // Botón que llama al método que elimina una vivienda enviándole un índice
+        this.btnElimina();
+    }//GEN-LAST:event_btnEliminarActionPerformed
+
+    /**
+     * Se llama en el botón para eliminar la vivienda seleccionada
+     */
+    private void btnElimina() {
         try {
 
             int index = tblViviendas.getSelectedRow();
-            this.storageViviendas.borrarVivienda(index);
+            index = Integer.parseInt(tblViviendas.getValueAt(index, 0).toString());
+            System.out.println("El id de la vivienda a eliminar es: " + index);
+            //this.storageViviendas.borrarVivienda(index);
+            if (operacionV.eliminarVivienda(Enlace.crearEnlace(), index)) {
+                JOptionPane.showMessageDialog(this, "Se ha eliminado la vivienda");
+            } else {
+                JOptionPane.showMessageDialog(this, "Hubo un inconveniente al intentar eliminar la vivienda\n Posible ID de vivienda no exista");
+            }
             this.rellenarTabla();
 
         } catch (ArrayIndexOutOfBoundsException ex) {
             JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar una vivienda");
             System.out.println(ex.getCause());
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgViviendas.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_btnEliminarActionPerformed
-
+    }
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
-        // Botón que obtiene los datos de la ventana
-        try {
-            this.limpiarCampos();
-            tbdViviendas.setTitleAt(1, "Editar");
-
-            int index = tblViviendas.getSelectedRow();
-            this.vivienda = new Vivienda();
-
-            // Obtenemos los datos de la vivienda seleccionada
-            this.vivienda = this.storageViviendas.obtenerVivienda(index);
-
-            txtIdVivienda.setText(Integer.toString(this.vivienda.getIdVivienda()));
-            txtCanBanios.setText(Float.toString(this.vivienda.getCantBanios()));
-            txtCantHabitaciones.setText(Integer.toString(this.vivienda.getCantHabitac()));
-            txtDepGarantia.setText(Integer.toString(this.vivienda.getDepositoGarantia()));
-            txtDescripcion.setText(this.vivienda.getDescripcion());
-            txtDireccion.setText(this.vivienda.getDireccion());
-            txtMtsConstruccion.setText(Float.toString(this.vivienda.getMtsConstruccion()));
-            txtMtsLote.setText(Float.toString(this.vivienda.getMtsLote()));
-            txtPrecioBase.setText(Integer.toString(this.vivienda.getPrecioBase()));
-            txtNomPropietario.setText(this.vivienda.getPropietario().getNombre());
-
-            // Para el propietario, podemos contener una variable que reciba el índice, así nada más se selecciona la tabla...
-            cmbTipoConstruccion.setSelectedItem(this.vivienda.getTipoConstruccion());
-            this.rdbs();
-
-            tbdViviendas.setTitleAt(1, "Editar");
-            this.cambiarPestañaEN();
-
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un propietario");
-            System.out.println(ex.getCause());
-        }
-
+        this.btnEditar();
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnLimpiarCamposActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarCamposActionPerformed
@@ -738,19 +685,7 @@ public class DlgViviendas extends javax.swing.JDialog {
     }//GEN-LAST:event_btnCancelar1ActionPerformed
 
     private void btnSeleccionarPropietarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSeleccionarPropietarioActionPerformed
-        // Botón que permite abrir la ventana de los propietarios
-        // La idea es que obtengamos el índice de la tabla seleccionada en esa ventana, esto sucederá cuando la persona de doble click
-        try {
-            DlgPropietarios propietaW = new DlgPropietarios(null, true, this.storagePropietarios, inPro);
-            propietaW.setVisible(true);
-            this.inPro = propietaW.getInPro();
-            // Obtenemos el nombre del propietario y lo seleccionamos
-            txtNomPropietario.setText(storagePropietarios.obtenerPropietario(inPro).getNombre());
-        } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println(e.getCause());
-            JOptionPane.showMessageDialog(this, "No ha seleccionado nigún propietario.");
-        }
-
+        this.seleccionaPropi();
     }//GEN-LAST:event_btnSeleccionarPropietarioActionPerformed
 
     private void tblViviendasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblViviendasMouseClicked
@@ -769,37 +704,7 @@ public class DlgViviendas extends javax.swing.JDialog {
     }//GEN-LAST:event_btnInicioActionPerformed
 
     private void txtBuscarKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyTyped
-        // TODO add your handling code here:
-
-        this.ENCABEZADO_TABLA = new String[]{"ID Vivienda", "Propietario", "Precio Base", "Dep. Garantía", "Estado", "Cochera", "Tamaño Vivienda"};
-        String cochera = "No"; // Por defecto las viviendas no tienen cochera
-        //  Creamos el modelo restringiendo que se editen sus celdas.
-        this.viviendasTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
-            @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return false;
-            }
-        };
-
-        if (txtBuscar.getText().length() == 0) {
-
-            this.rellenarTabla();
-
-        } else {
-            for (byte i = 0; i < storageViviendas.getTotal(); i++) {
-
-                this.vivienda = storageViviendas.obtenerVivienda(i);
-                if (Integer.toString(vivienda.getIdVivienda()).regionMatches(true, 0, txtBuscar.getText(), 0, txtBuscar.getText().length())) {
-
-                    Object registro[] = {this.vivienda.getIdVivienda(), this.vivienda.getPropietario().getNombre(),
-                        this.vivienda.getPrecioBase(), this.vivienda.getDepositoGarantia(), this.vivienda.getEstado(),
-                        cochera, this.vivienda.getMtsConstruccion()};
-
-                    this.viviendasTabla.addRow(registro);
-
-                }
-            }
-        }
+        this.buscar();
     }//GEN-LAST:event_txtBuscarKeyTyped
 
     /**
@@ -900,9 +805,123 @@ public class DlgViviendas extends javax.swing.JDialog {
     private javax.swing.JTextField txtPrecioBase;
     // End of variables declaration//GEN-END:variables
 
-    
     /**
-     * Método que vuelve al lugar de selección de los RadioButtons
+     * Se llama para editar la vivienda
+     */
+    private void btnEditar() {
+        try {
+            this.limpiarCampos();
+            tbdViviendas.setTitleAt(1, "Editar");
+            int index = tblViviendas.getSelectedRow(); // Obtenemos el lugar de la fila del registro a editar
+
+            /* En teoría recibimos solo 1 posición, porque el id es único en la BD
+            Hacemos esto porque todas la información no alcanza en la tabla y necesitamos
+            tener todo a mano para editarlo.
+            Así que obtenemos la vivienda desde la BD.
+             */
+            ArrayList<Vivienda> viviA = operacionV.FiltroBD(Enlace.crearEnlace(), "idVivienda",
+                    tblViviendas.getValueAt(index, 0).toString(), "TblVivienda");
+            this.vivienda = viviA.get(0);
+
+            // Obtenemos los datos de la vivienda seleccionada
+            //this.vivienda = this.storageViviendas.obtenerVivienda(index);
+            // Recolectamos los datos de la tabla
+            txtIdVivienda.setText(String.valueOf(vivienda.getIdVivienda()));
+            txtCanBanios.setText(String.valueOf(vivienda.getCantBanios()));
+            txtCantHabitaciones.setText(String.valueOf(vivienda.getCantHabitac()));
+            txtDepGarantia.setText(String.valueOf(vivienda.getDepositoGarantia()));
+            txtDescripcion.setText(vivienda.getDescripcion());
+            txtDireccion.setText(vivienda.getDireccion());
+            txtMtsConstruccion.setText(String.valueOf(vivienda.getMtsConstruccion()));
+            txtMtsLote.setText(String.valueOf(vivienda.getMtsLote()));
+            txtPrecioBase.setText(String.valueOf(vivienda.getPrecioBase()));
+            txtNomPropietario.setText(String.valueOf(vivienda.getCedPropiet()));
+            cmbTipoConstruccion.setSelectedItem(vivienda.getTipoConstruccion());
+            this.rdbs();
+
+            tbdViviendas.setTitleAt(1, "Editar");
+            this.cambiarPestañaEN();
+
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            JOptionPane.showMessageDialog(this, "Por favor asegúrese de seleccionar un propietario");
+            System.out.println(ex.getCause());
+        } catch (SQLException | ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(this, "Error al intentar obtener los datos de la BD");
+            System.out.println(ex.getCause());
+        }
+
+    }
+
+    /**
+     * Se llama para guardar la vivienda
+     */
+    private void btnGuarda() {
+        if (this.verificarDatos()) {
+
+            try {
+                this.vivienda = new Vivienda();
+
+                vivienda.setCantBanios(Short.parseShort(txtCanBanios.getText()));
+                vivienda.setCantHabitac(Short.parseShort(txtCantHabitaciones.getText()));
+                vivienda.setCarretera(this.obtenerCarretera());
+                vivienda.setCochera(this.tieneCochera());
+                vivienda.setDepositoGarantia(Integer.parseInt(txtDepGarantia.getText()));
+                vivienda.setDescripcion(txtDescripcion.getText());
+                vivienda.setDireccion(txtDireccion.getText());
+                vivienda.setMtsConstruccion(Float.parseFloat(txtMtsConstruccion.getText()));
+                vivienda.setMtsLote(Float.parseFloat(txtMtsLote.getText()));
+                vivienda.setPrecioBase(Integer.parseInt(txtPrecioBase.getText()));
+                vivienda.setTipoConstruccion(this.obtenerTipoConstruccion());
+                vivienda.setCedPropiet(Integer.parseInt(txtNomPropietario.getText()));
+
+                // Reemplazamos por la tabla ya lista de propietarios
+                //vivienda.setPropietario(this.storagePropietarios.obtenerPropietario(this.inPro));
+                if (tbdViviendas.getTitleAt(1).equals("Añadir")) {
+
+                    // No hace falta crear el ID, MySQL los crea
+                    //vivienda.setIdVivienda(storageViviendas.crearIdVivienda());
+                    // Si el título dice añadir, entonces guardamos a la vivienda
+                    if (operacionV.guardarVivienda(Enlace.crearEnlace(), vivienda)) {
+                        JOptionPane.showMessageDialog(this, "Vivienda guardada");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "No se ha podido guardar la vivienda");
+                    }
+
+                } else {
+                    // Si la pestaña tiene el título de editar
+                    vivienda.setIdVivienda(Integer.parseInt(txtIdVivienda.getText()));
+                    if (operacionV.editarVivienda(Enlace.crearEnlace(), vivienda)) {
+                        JOptionPane.showMessageDialog(this, "Se ha modificado la vivienda");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Hubo un error al intentar modificar la vivienda");
+                    }
+//                    int index = tblViviendas.getSelectedRow();
+//                    storageViviendas.editarVivienda(index, vivienda);
+                }
+
+                this.rellenarTabla();
+                this.cambiarPestañaT();
+                this.limpiarCampos();
+
+            } catch (SQLException | ClassNotFoundException ex) {
+                Logger.getLogger(DlgViviendas.class.getName()).log(Level.SEVERE, null, ex);
+
+            } catch (NumberFormatException esc) {
+
+                System.out.println(esc.getMessage());
+                JOptionPane.showMessageDialog(this, "Ingrese correctamente los datos");
+
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.out.println(e.getMessage());
+                JOptionPane.showMessageDialog(this, "Seleccione un propietario");
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Asegúrese de rellenar todos los campos y seleccionar todas las opciones...");
+        }
+    }
+
+    /**
+     * Método que vuelve al lugar de selección de los RadioButtons según el valor de la vivienda a editar
      */
     private void rdbs() {
 
@@ -924,7 +943,7 @@ public class DlgViviendas extends javax.swing.JDialog {
         /**
          * Instrucciones que selecciona los RadioButtons de la cochera
          */
-        if (vivienda.getCochera() == true) {
+        if (vivienda.getCochera()) {
             rdbTrue.setSelected(true);
         } else {
             rdbFalse.setSelected(true);
@@ -940,6 +959,46 @@ public class DlgViviendas extends javax.swing.JDialog {
         tbdViviendas.setEnabledAt(0, true);
         tbdViviendas.setSelectedIndex(0);
         tbdViviendas.setEnabledAt(1, false);
+    }
+
+    /**
+     * Se llama al utilizar el evento incluido en evento del objeto txtBuscar
+     */
+    private void buscar() {
+        //        this.ENCABEZADO_TABLA = new String[]{"ID Vivienda", "Propietario", "Precio Base", "Dep. Garantía", "Estado", "Cochera", "Tamaño Vivienda"};
+//        String cochera = "No"; // Por defecto las viviendas no tienen cochera
+//        //  Creamos el modelo restringiendo que se editen sus celdas.
+//        this.viviendasTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
+//            @Override
+//            public boolean isCellEditable(int rowIndex, int columnIndex) {
+//                return false;
+//            }
+//        };
+        try {
+            if (txtBuscar.getText().length() == 0) {
+
+                this.rellenarTabla();
+            } else {
+
+                this.viviendasTabla = operacionV.BuscarFiltrado(Enlace.crearEnlace(), "idVivienda",
+                        txtBuscar.getText(), "TblVivienda");
+                tblViviendas.setModel(viviendasTabla);
+//            for (byte i = 0; i < storageViviendas.getTotal(); i++) {
+//
+//                this.vivienda = storageViviendas.obtenerVivienda(i);
+//                if (Integer.toString(vivienda.getIdVivienda()).regionMatches(true, 0, txtBuscar.getText(), 0, txtBuscar.getText().length())) {
+//
+//                    Object registro[] = {this.vivienda.getIdVivienda(), this.vivienda.getCedPropiet(),
+//                        this.vivienda.getPrecioBase(), this.vivienda.getDepositoGarantia(), this.vivienda.getEstado(),
+//                        cochera, this.vivienda.getMtsConstruccion()};
+//
+//                    this.viviendasTabla.addRow(registro);
+//
+//                }
+            }
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgViviendas.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -1052,51 +1111,74 @@ public class DlgViviendas extends javax.swing.JDialog {
      * Método para rellenar la tabla
      */
     private void rellenarTabla() {
+//
+//        this.ENCABEZADO_TABLA = new String[]{"ID Vivienda", "Propietario", "Precio Base", "Dep. Garantía", "Estado", "Cochera", "Tamaño Vivienda", "Direccion"};
+//        String cochera = "No"; // Por defecto las viviendas no tienen cochera
+//        //  Creamos el modelo restringiendo que se editen sus celdas.
+//        this.viviendasTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
+//            @Override
+//            public boolean isCellEditable(int rowIndex, int columnIndex) {
+//                return false;
+//            }
+//        };
+        // Si dice seleccionar, entonces muestra las viviendas con estado disponible
+//        if (tbdViviendas.getTitleAt(0).equals("Seleccionar")) {
+        try {
 
-        this.ENCABEZADO_TABLA = new String[]{"ID Vivienda", "Propietario", "Precio Base", "Dep. Garantía", "Estado", "Cochera", "Tamaño Vivienda"};
-        String cochera = "No"; // Por defecto las viviendas no tienen cochera
-        //  Creamos el modelo restringiendo que se editen sus celdas.
-        this.viviendasTabla = new DefaultTableModel(null, this.ENCABEZADO_TABLA) {
-            @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return false;
-            }
-        };
-
-        if (tbdViviendas.getTitleAt(0).equals("Seleccionar")) { // Si dice seleccionar, entonces muestra las viviendas con estado disponible
-
-            for (byte i = 0; i < storageViviendas.getTotal(); i++) {
-
-                this.vivienda = storageViviendas.obtenerVivienda(i);
-                if (vivienda.getCochera()) { // Si tiene cochera
-                    cochera = "Si";
-                }
-
-                if (vivienda.getEstado().equals("Disponible")) {
-                    Object registro[] = {this.vivienda.getIdVivienda(), this.vivienda.getPropietario().getNombre(),
-                        this.vivienda.getPrecioBase(), this.vivienda.getDepositoGarantia(), this.vivienda.getEstado(),
-                        cochera, this.vivienda.getMtsConstruccion()};
-
-                    this.viviendasTabla.addRow(registro);
-                }
-            }
-        } else { // Si no es para selecccionar, entonces agregamos a la tabla todas
-            for (byte i = 0; i < storageViviendas.getTotal(); i++) {
-
-                this.vivienda = storageViviendas.obtenerVivienda(i);
-                if (vivienda.getCochera()) {
-                    cochera = "Si";
-                }
-
-                Object registro[] = {this.vivienda.getIdVivienda(), this.vivienda.getPropietario().getNombre(),
-                    this.vivienda.getPrecioBase(), this.vivienda.getDepositoGarantia(), this.vivienda.getEstado(),
-                    cochera, this.vivienda.getMtsConstruccion()};
-
-                this.viviendasTabla.addRow(registro);
-            }
+            this.viviendasTabla = operacionV.TodoViviendas(Enlace.crearEnlace(), "Viviendas", tbdViviendas.getTitleAt(0));
+            this.tblViviendas.setModel(this.viviendasTabla);
+            lblTotal.setText("Total de viviendas: " + tblViviendas.getRowCount());
+//            for (byte i = 0; i < storageViviendas.getTotal(); i++) {
+//
+//                this.vivienda = storageViviendas.obtenerVivienda(i);
+//                if (vivienda.getCochera()) { // Si tiene cochera
+//                    cochera = "Si";
+//                }
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(DlgViviendas.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
-        this.tblViviendas.setModel(this.viviendasTabla);
-        lblTotal.setText("Total de viviendas: " + storageViviendas.getTotal());
+
+//                if (vivienda.getEstado().equals("Disponible")) {
+//                    Object registro[] = {this.vivienda.getIdVivienda(), this.vivienda.getCedPropiet(),
+//                        this.vivienda.getPrecioBase(), this.vivienda.getDepositoGarantia(), this.vivienda.getEstado(),
+//                        cochera, this.vivienda.getMtsConstruccion()};
+//
+//                    this.viviendasTabla.addRow(registro);
+//                }
+//            }
+//        } else { // Si no es para selecccionar, entonces agregamos a la tabla todas
+//            for (byte i = 0; i < storageViviendas.getTotal(); i++) {
+//
+//                this.vivienda = storageViviendas.obtenerVivienda(i);
+//                if (vivienda.getCochera()) {
+//                    cochera = "Si";
+//                }
+//
+//                Object registro[] = {this.vivienda.getIdVivienda(), this.vivienda.getCedPropiet(),
+//                    this.vivienda.getPrecioBase(), this.vivienda.getDepositoGarantia(), this.vivienda.getEstado(),
+//                    cochera, this.vivienda.getMtsConstruccion()};
+//
+//                this.viviendasTabla.addRow(registro);
+//            }
+//        }
+    }
+
+    /**
+     * Botón que permite abrir la ventana de los propietarios Obtenemos la cédula del propietario
+     */
+    private void seleccionaPropi() {
+        try {
+            DlgPropietarios propietaW = new DlgPropietarios(null, true, inPro);
+            propietaW.setVisible(true);
+            this.inPro = propietaW.getInPro();
+            // Obtenemos el nombre del propietario y lo seleccionamos
+            txtNomPropietario.setText(String.valueOf(inPro));
+            System.out.println("Propietario traído: " + inPro);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println(e.getCause());
+            JOptionPane.showMessageDialog(this, "No ha seleccionado nigún propietario.");
+        }
     }
 
     /**
@@ -1119,7 +1201,7 @@ public class DlgViviendas extends javax.swing.JDialog {
         btngCarretera.clearSelection();
         cmbTipoConstruccion.setSelectedIndex(0);
     }
-    
+
     public int getInVi() {
         return inVi;
     }

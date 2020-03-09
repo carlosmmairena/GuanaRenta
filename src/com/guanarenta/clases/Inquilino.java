@@ -18,7 +18,7 @@ public class Inquilino {
     private char genero;
     private Date fechNac;
     private String direccion;
-    private String telefono;
+    private int telefono;
     private String email;
     private String ocupacion;
 
@@ -33,7 +33,7 @@ public class Inquilino {
      * @param email
      * @param ocupacion 
      */
-    public Inquilino(long cedInqui, String nomInqui, char genero, Date fechNac, String direccion, String telefono, String email, String ocupacion) {
+    public Inquilino(long cedInqui, String nomInqui, char genero, Date fechNac, String direccion, int telefono, String email, String ocupacion) {
         this.cedInqui = cedInqui;
         this.nomInqui = nomInqui;
         this.genero = genero;
@@ -53,7 +53,7 @@ public class Inquilino {
         this.genero = 'F';
         this.fechNac = Date.from(Instant.now());
         this.direccion = "";
-        this.telefono = "";
+        this.telefono = 0;
         this.email = "";
         this.ocupacion = "";
     }
@@ -98,11 +98,11 @@ public class Inquilino {
         this.direccion = direccion;
     }
 
-    public String getTelefono() {
+    public int getTelefono() {
         return telefono;
     }
 
-    public void setTelefono(String telefono) {
+    public void setTelefono(int telefono) {
         this.telefono = telefono;
     }
 

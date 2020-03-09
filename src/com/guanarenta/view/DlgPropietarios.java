@@ -1,4 +1,3 @@
-
 /*
  * Clase que contiene la funcionalidad de obtener, modificar, eliminar y editar los propietarios
  * LO QUE FALTA ES MEJORAR LA BÚSQUEDA A NIVEL DE FRONT END, PARA QUE BUSQUE POR DIFERENTES PROPIEDADES
@@ -68,20 +67,20 @@ public class DlgPropietarios extends javax.swing.JDialog {
      *
      * @param parent
      * @param modal
-     * @param storagePropietario
      * @param inPro
      */
-    public DlgPropietarios(java.awt.Frame parent, boolean modal, StoragePropietarios storagePropietario, int inPro) {
+    public DlgPropietarios(java.awt.Frame parent, boolean modal, int inPro) {
         super(parent, modal);
         initComponents();
 
         this.propietario = new Propietario();
-        this.storagePropietario = storagePropietario;
+        //this.storagePropietario = storagePropietario;
         this.inPro = inPro;
         tbdPropietarios.setTitleAt(0, "Seleccionar");
         tblPropietarios.setToolTipText("Haga doble click en un propietaro para seleccionarlo");
         this.operacion = new OperacionesPropietario();
         this.modeloTabla = new DefaultTableModel();
+        this.operacion = new OperacionesPropietario();
     }
 
     @SuppressWarnings("unchecked")
@@ -665,7 +664,8 @@ public class DlgPropietarios extends javax.swing.JDialog {
     private void clickTabla(java.awt.event.MouseEvent evt){
         if (evt.getClickCount() == 2 && tbdPropietarios.getTitleAt(0).equals("Seleccionar")) {
             inPro = tblPropietarios.getSelectedRow();
-            System.out.println("Se ha seleccionado el propietario: " + storagePropietario.obtenerPropietario(inPro).getNombre());
+            inPro = Integer.parseInt(tblPropietarios.getValueAt(inPro, 1).toString()); // Obtenemos la cédula
+            System.out.println("Se ha seleccionado el propietario con cédula: " + inPro);
             this.dispose();
         }
     }

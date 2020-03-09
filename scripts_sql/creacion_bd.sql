@@ -24,6 +24,7 @@ nomInqui VARCHAR(40) NOT NULL,
 genero CHAR(1) NOT NULL,
 fechNac DATE   NOT NULL,
 direccion TEXT NOT NULL,
+telefono VARCHAR(20) NOT NULL, -- se agrega
 email VARCHAR(35) NOT NULL,
 ocupacion VARCHAR(40) NOT NULL,
 
@@ -36,15 +37,16 @@ CONSTRAINT CK_Genero CHECK(genero = 'F' OR genero = 'M')
 CREATE TABLE TblVivienda(
 idVivienda INT AUTO_INCREMENT NOT NULL,
 descripcion TEXT NOT NULL,
-mtsConstrucc INT NOT NULL,
-mtsLote INT NOT NULL,
+direccion TEXT NOT NULL,
+mtsConstrucc FLOAT NOT NULL,
+mtsLote FLOAT NOT NULL,
 tipoConstrucc VARCHAR(35) NOT NULL,
-cochera BOOLEAN NOT NULL,
+cochera tinytext NOT NULL,
 cantHabitac INT NOT NULL,
 cantBanios INT NOT NULL,
 carretera VARCHAR(20) NOT NULL,
-precioBase DECIMAL(7,2) NOT NULL,
-deposGarantia DECIMAL(7,2) NOT NULL,
+precioBase INT NOT NULL,
+deposGarantia INT NOT NULL,
 cedPropiet INT NOT NULL,
 estado VARCHAR(10) NOT NULL,
 
@@ -115,10 +117,6 @@ CONSTRAINT FK_nomInqui FOREIGN KEY (nomInqui) REFERENCES TblInquilino (cedInqui)
 ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
-
-
-
-
 -- PROCEDIMIEMTOS ALMACENDADOS
 -- Insertamos al usuario propietario
 DELIMITER $$
@@ -188,28 +186,32 @@ DELIMITER ;
 -- Insertamos a una vivienda
 DELIMITER $$
 CREATE DEFINER = `root`@`localhost` PROCEDURE stpGuardarVivienda
-($descripcion TEXT,
-$mtsConstrucc INT,
-$mtsLote INT,
+(
+$descripcion TEXT,
+$direccion TEXT,
+$mtsConstrucc FLOAT, -- se cambia de int a float
+$mtsLote FLOAT, -- se cambia de int a float
 $tipoConstrucc VARCHAR(35),
-$cochera BOOLEAN,
+$cochera TINYINT(1),
 $cantHabitac INT,
 $cantBanios INT,
 $carretera VARCHAR(20),
-$precioBase DECIMAL(7,2),
-$deposGarantia DECIMAL(7,2),
+$precioBase INT, -- Se cambia de decimal 7,2 a int
+$deposGarantia INT, -- Se cambia de decimal 7,2 a int
 $cedPropiet INT,
 $estado VARCHAR(10))
 
 BEGIN
      -- No hace falta validar, ya que el ID siempre será diferente y unas viviendas pueden tener
      -- características en común
-      INSERT INTO TblVivienda (descripcion,mtsConstrucc,mtsLote,tipoConstrucc,
-							    cochera,cantHabitac,cantBanios,carretera,precioBase,
-								deposGarantia,estado)
-	  VALUES ($descripcion,$mtsConstrucc,$mtsLote,$tipoConstrucc,$cochera,$cantHabitac,$cantBanios,
-			$carretera,$precioBase,$deposGarantia,$cedPropiet,$estado);
     
+			INSERT INTO TblVivienda (descripcion,direccion,mtsConstrucc,mtsLote,tipoConstrucc,
+									cochera,cantHabitac,cantBanios,carretera,precioBase,
+									deposGarantia,cedPropiet,estado)
+			VALUES ($descripcion,$direccion,$mtsConstrucc,$mtsLote,$tipoConstrucc,
+					$cochera,$cantHabitac,$cantBanios,$carretera,$precioBase,
+					$deposGarantia,$cedPropiet,$estado);
+     
 END$$
 DELIMITER ;
 
@@ -218,15 +220,16 @@ DELIMITER $$
 CREATE DEFINER = `root`@`localhost` PROCEDURE stpEditarVivienda
 ($idVivienda INT,
 $descripcion TEXT,
-$mtsConstrucc INT,
-$mtsLote INT,
+$direccion TEXT,
+$mtsConstrucc FLOAT, -- se cambia de int a float
+$mtsLote FLOAT, -- se cambia de int a float
 $tipoConstrucc VARCHAR(35),
-$cochera BOOLEAN,
+$cochera TINYINT(1),
 $cantHabitac INT,
 $cantBanios INT,
 $carretera VARCHAR(20),
-$precioBase DECIMAL(7,2),
-$deposGarantia DECIMAL(7,2),
+$precioBase INT, -- Se cambia de decimal 7,2 a int
+$deposGarantia INT, -- Se cambia de decimal 7,2 a int
 $cedPropiet INT,
 $estado VARCHAR(10))
 
@@ -236,21 +239,21 @@ BEGIN
 		 SELECT 'LA VIVIENDA CON EL ID '+$idVivienda+' NO EXISTE';
          
 	  ELSE
-      
-           UPDATE TblVivienda SET
-			   descripcion = $descripcion,
-			   mtsConstrucc = $mtsConstrucc,
-			   mtsLote = $mtsLote,
-			   tipoConstrucc = $tipoConstrucc,
-			   cochera = $cochera,
-			   cantHabitac = $cantHabitac,
-			   cantBanios = $cantBanios,
-			   carretera = $carretera,
-			   precioBase = $precioBase,
-			   deposGarantia = $deposGarantia,
-			   estado = $estado
+          UPDATE TblVivienda SET
+				descripcion  = $descripcion,
+				direccion = $direccion,
+				mtsConstrucc = $mtsConstrucc,
+				mtsLote = $mtsLote,
+				tipoConstrucc = $tipoConstrucc,
+				cochera = $cochera,
+				cantHabitac = $cantHabitac,
+				cantBanios = $cantBanios,
+				carretera = $carretera,
+				precioBase = $precioBase,
+				deposGarantia = $deposGarantia,
+				cedPropiet = $cedPropiet,
+				estado = $estado
            WHERE idVivienda = $idVivienda;
-           
 	 END IF;
 END$$
 DELIMITER ;
@@ -261,7 +264,7 @@ CREATE DEFINER = `root`@`localhost` PROCEDURE stpEliminarVivienda
 ($idVivienda INT)
 
 BEGIN
-     IF EXISTS (SELECT idVivienda FROM TblVivienda WHERE idViviendad = $idVivienda) THEN
+     IF EXISTS (SELECT idVivienda FROM TblVivienda WHERE idVivienda = $idVivienda) THEN
            
 			DELETE FROM TblVivienda WHERE idVivienda = $idVivienda;
            
@@ -301,17 +304,18 @@ $nomInqui VARCHAR(40),
 $genero CHAR(1),
 $fechNac DATE,
 $direccion TEXT,
+$telefono INT,
 $email VARCHAR(35),
 $ocupacion VARCHAR(40))
 
 BEGIN
 	IF NOT EXISTS (SELECT cedInqui FROM TblInquilino WHERE cedInqui = $cedInqui) THEN
 		
-        INSERT INTO TblInquilino (cedInqui,nomInqui,genero,fechNac,direccion,email,ocupacion)
-			VALUES ($cedInqui,$nomInqui,$genero,$fechNac,$direccion,$email,$ocupacion);
-        
+        INSERT INTO TblInquilino (cedInqui,nomInqui,genero,fechNac,
+								  direccion,telefono,email,ocupacion)
+			VALUES ($cedInqui,$nomInqui,$genero,$fechNac,$direccion,
+					$telefono,$email,$ocupacion);
     ELSE
-		
         SELECT 'EL USUARIO CON CÉDULA '+$cedInqui+' YA EXISTE';
         
     END IF;
@@ -327,6 +331,7 @@ $nomInqui VARCHAR(40),
 $genero CHAR(1),
 $fechNac DATE,
 $direccion TEXT,
+$telefono INT,
 $email VARCHAR(35),
 $ocupacion VARCHAR(40))
 
@@ -334,12 +339,13 @@ BEGIN
 	IF EXISTS (SELECT cdInqui FROM TblInquilino WHERE cedInqui = $cedInqui) THEN
 		
         UPDATE TblInquilino SET
-			nomInqui = $nomInqui,
-			genero = $genero,
-			fechNac = $fechNac,
-			direccion = $direccion,
-			email = $email,
-			ocupacion = $ocupacion
+				nomInqui = $nomInqui,
+				genero = $genero,
+				fechNac = $fechNac,
+				direccion = $direccion,
+				telefono = $telefono,
+				email = $email,
+				ocupacion = $ocupacion
         WHERE cedInqui = $cedInqui;
         
     ELSE
@@ -504,22 +510,34 @@ BEGIN
 END $$
 DELIMITER ;
 
+-- Creacion de una vista
+CREATE VIEW VTblViviendas
+	as
+	SELECT V.idVivienda,V.descripcion,V.direccion,V.mtsConstrucc,
+                V.mtsLote,V.tipoConstrucc,V.cochera,V.cantHabitac,V.cantBanios,V.carretera,
+                V.precioBase,V.deposGarantia,P.cedPropiet,V.estado
+                        FROM TblVivienda V INNER JOIN TblPropietario P 
+                         ON V.cedPropiet = P.cedPropiet;
+
 -- Procedimiento que muestra todos los datos de las tablas
 DELIMITER $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE stpMostrarDatos(
+CREATE  PROCEDURE stpMostrarDatos(
 $Tabla VARCHAR(20))
 BEGIN
 	
     CASE $Tabla
-				WHEN 'Propietarios' THEN SELECT * FROM TblPropietario;
-                WHEN 'Viviendas' THEN SELECT * FROM TblVivienda;
-                WHEN 'Inquilinos' THEN SELECT * FROM TblInquilino;
-                WHEN 'Alquileres' THEN SELECT * FROM TblAlquileres;
+				WHEN 'Propietarios'  THEN SELECT * FROM TblPropietario;
+                WHEN 'Viviendas'     THEN SELECT * FROM VTblViviendas;
+                -- WHEN 'Viviendas'     THEN SELECT * FROM TblVivienda;
+                WHEN 'Inquilinos'    THEN SELECT * FROM TblInquilino;
+                WHEN 'Alquileres'    THEN SELECT * FROM TblAlquileres;
                 WHEN 'Mensualidades' THEN SELECT * FROM TblMensualidades;
-    END CASE;
-    
+    END CASE;    
 END$$
 DELIMITER ;
+
+USE BD_GuanaRenta;
+SELECT * FROM TblVivienda;
 
 -- Almacenamiento que nos muestra si un usuario existe
 DELIMITER $$
@@ -535,7 +553,6 @@ BEGIN
 	END CASE;
 END$$
 DELIMITER ;
-
 
 -- Este procedimiento recibe la tabla a buscar el dato y el campo donde está el dato
 -- luego llama a los procedimientos correspondientes
@@ -675,3 +692,15 @@ DELIMITER ;
 
 -- Por aquello xd
 FLUSH PRIVILEGES;
+
+
+
+-- INNER JOINS agregados
+
+
+
+
+
+
+
+

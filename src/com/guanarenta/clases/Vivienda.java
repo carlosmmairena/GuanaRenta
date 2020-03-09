@@ -17,11 +17,12 @@ public class Vivienda {
     private String tipoConstruccion;
     private Boolean cochera;
     private short cantHabitac;
-    private float cantBanios;
+    private short cantBanios;
     private String carretera;
     private int precioBase;
     private int depositoGarantia;
-    private Propietario propietario;
+    //-private Propietario propietario;
+    private int cedPropiet;
     private String estado;
     
     /**
@@ -38,10 +39,9 @@ public class Vivienda {
      * @param carretera
      * @param precioBase
      * @param depositoGarantia
-     * @param propietario
      * @param estado 
      */
-    public Vivienda(int idVivienda, String descripcion, String direccion, float mtsConstruccion, float mtsLote, String tipoConstruccion, Boolean cochera, short cantHabitac, float cantBanios, String carretera, int precioBase, int depositoGarantia, Propietario propietario, String estado) {
+    public Vivienda(int idVivienda, String descripcion, String direccion, float mtsConstruccion, float mtsLote, String tipoConstruccion, Boolean cochera, short cantHabitac, short cantBanios, String carretera, int precioBase, int depositoGarantia, int cedPropiet, String estado) {
         this.idVivienda = idVivienda;
         this.descripcion = descripcion;
         this.direccion = direccion;
@@ -54,7 +54,7 @@ public class Vivienda {
         this.carretera = carretera;
         this.precioBase = precioBase;
         this.depositoGarantia = depositoGarantia;
-        this.propietario = propietario;
+        this.cedPropiet = cedPropiet;
         this.estado = estado;
     }
     
@@ -74,7 +74,7 @@ public class Vivienda {
         this.carretera = "";
         this.precioBase = 0;
         this.depositoGarantia = 0;
-        this.propietario = null;
+        this.cedPropiet = 0;
         this.estado = "Disponible";
     }
 
@@ -154,11 +154,11 @@ public class Vivienda {
         this.cantHabitac = cantHabitac;
     }
 
-    public float getCantBanios() {
+    public short getCantBanios() {
         return cantBanios;
     }
 
-    public void setCantBanios(float cantBaños) {
+    public void setCantBanios(short cantBaños) {
         this.cantBanios = cantBaños;
     }
 
@@ -186,12 +186,12 @@ public class Vivienda {
         this.depositoGarantia = depositoGarantia;
     }
 
-    public Propietario getPropietario() {
-        return propietario;
+    public int getCedPropiet() {
+        return cedPropiet;
     }
 
-    public void setPropietario(Propietario propietario) {
-        this.propietario = propietario;
+    public void setCedPropiet(int cedPropiet) {
+        this.cedPropiet = cedPropiet;
     }
 
     public String getEstado() {

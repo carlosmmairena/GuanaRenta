@@ -1,9 +1,10 @@
 /*
  * Clase principal del proyecto
  */
-
 package com.guanarenta.view;
 
+import com.guanarenta.connections.Enlace;
+import com.guanarenta.connections.OperacionesPropietario;
 import com.guanarenta.storage.StorageInquilinos;
 import com.guanarenta.storage.StoragePropietarios;
 import com.guanarenta.storage.StorageViviendas;
@@ -11,6 +12,9 @@ import com.guanarenta.storage.StorageAlquileres;
 import com.guanarenta.storage.StorageMensualidades;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -25,9 +29,12 @@ public class FrmGuanaRenta extends javax.swing.JFrame {
     StorageAlquileres storageAlquileres;
     StorageMensualidades storageMensualidades;
 
+    OperacionesPropietario operacion; // Esto tal vez no sea necesario
+
     public FrmGuanaRenta() {
         initComponents();
-        
+        this.operacion = new OperacionesPropietario();
+
         this.storagePropietarios = new StoragePropietarios();
         this.storageViviendas = new StorageViviendas();
         this.storageInquilinos = new StorageInquilinos();
@@ -246,40 +253,11 @@ public class FrmGuanaRenta extends javax.swing.JFrame {
         // Mostramos la ventana de ganancias
         DlgGanancias ganancias = new DlgGanancias(this, rootPaneCheckingEnabled, storageAlquileres, storageMensualidades);
         ganancias.setVisible(true);
-
     }//GEN-LAST:event_btnGananciasActionPerformed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-
-        if (storagePropietarios.getTotal() != 0) {
-            btnViviendas.setEnabled(true);
-        } else {
-            btnViviendas.setEnabled(false);
-        }
-        if (storageViviendas.getTotal() != 0) {
-            btnInquilinos.setEnabled(true);
-        } else {
-            btnInquilinos.setEnabled(false);
-        }
-        if (storageInquilinos.getTotal() != 0) {
-            btnAlquileres.setEnabled(true);
-        } else {
-            btnAlquileres.setEnabled(false);
-
-        }
-
+    //    this.existenDatos();
     }//GEN-LAST:event_formWindowActivated
-
-    /**
-     * Sobre escrito para cambiar el valor de retorno de este método
-     *
-     * @return icono para la aplicación
-     */
-    @Override
-    public Image getIconImage() {
-        Image retValue = Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("com/guanarenta/img/guanaRenta.png"));
-        return retValue;
-    }
 
     /**
      * @param args the command line argumentstorage
@@ -297,19 +275,16 @@ public class FrmGuanaRenta extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(FrmGuanaRenta.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(FrmGuanaRenta.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(FrmGuanaRenta.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(FrmGuanaRenta.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
+        //</editor-fold>
+
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new FrmGuanaRenta().setVisible(true);
             }
@@ -328,4 +303,43 @@ public class FrmGuanaRenta extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel pnlBase;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * Sobre escrito para cambiar el valor de retorno de este método
+     *
+     * @return icono para la aplicación
+     */
+    @Override
+    public Image getIconImage() {
+        Image retValue = Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("com/guanarenta/img/guanaRenta.png"));
+        return retValue;
+    }
+
+    /**
+     * Revisamos si existen datos
+     */
+    private void existenDatos() {
+        // No todas las condicionales deberían funcionar porque los campos son diferentes
+        try {
+            if (operacion.MostrarDatos(Enlace.crearEnlace(), "Propietarios").size() > 0) {
+                btnViviendas.setEnabled(true);
+
+            } else {
+                btnViviendas.setEnabled(false);
+                
+            }
+//            if (operacion.MostrarDatos(Enlace.crearEnlace(), "Viviendas").size() > 0) {
+//                btnInquilinos.setEnabled(true);
+//            } else {
+//                btnInquilinos.setEnabled(false);
+//            }
+//            if (operacion.MostrarDatos(Enlace.crearEnlace(), "Inquilinos").size() > 0) {
+//                btnAlquileres.setEnabled(true);
+//            } else {
+//                btnAlquileres.setEnabled(false);
+//            }
+        } catch (SQLException | ClassNotFoundException ex) {
+            Logger.getLogger(FrmGuanaRenta.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }

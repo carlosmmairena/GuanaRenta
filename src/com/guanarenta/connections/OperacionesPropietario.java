@@ -15,7 +15,6 @@ import javax.swing.table.DefaultTableModel;
 public class OperacionesPropietario implements OperacionesPrincipales {
 
     // Tal vez este método no hace falta, está integrada un query en los insert, tal vez podamos separarlas
-    @Override
     public int ExisteUsuario(Connection enlace, int IdUsuario, String tipoUsuario) throws SQLException {
 
         try {
@@ -41,8 +40,8 @@ public class OperacionesPropietario implements OperacionesPrincipales {
      * @param tabla
      * @return
      * @throws SQLException
+     * Tal vez pueda ser privado
      */
-    @Override
     public ArrayList<Propietario> MostrarDatos(Connection conexion, String tabla) throws SQLException {
         ArrayList<Propietario> propi = new ArrayList();
         try {
@@ -170,7 +169,7 @@ public class OperacionesPropietario implements OperacionesPrincipales {
     }
 
     /**
-     * Retorna la lista de los clientes que coinciden con datosP
+     * Retorna la lista de los registros que coinciden con datosP
      *
      * @param conexion
      * @param datoP Dato a buscar
@@ -179,7 +178,6 @@ public class OperacionesPropietario implements OperacionesPrincipales {
      * @return
      * @throws SQLException
      */
-    @Override
     public ArrayList<Propietario> FiltroBD(Connection conexion, String campo, String datoP, String tabla) throws SQLException {
         ArrayList<Propietario> propi = new ArrayList();
         try {
