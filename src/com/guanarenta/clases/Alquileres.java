@@ -137,5 +137,4 @@ public class Alquileres {
     public void setEstado(String estado) {
         this.estado = estado;
     }
-
 }
